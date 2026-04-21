@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>온유 — 부드러운 마음 체험 활동</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+    background: #FAF8F3;
+    color: #2C2A24;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  #app { max-width: 480px; margin: 0 auto; padding: 20px 16px 40px; }
+
+  .header {
+    text-align: center;
+    padding: 24px 0 20px;
+  }
+  .header-title {
+    font-size: 22px;
+    font-weight: 600;
+    color: #7A6040;
+    letter-spacing: .05em;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: #9A8060;
+    margin-top: 4px;
+  }
+  .header-line {
+    width: 32px; height: 1px;
+    background: #C8A060;
+    margin: 12px auto 0;
+  }
+
+  .stage-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 20px;
+    padding: 0 2px;
+  }
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: #D9D3C8;
+    transition: background .3s;
+    flex-shrink: 0;
+  }
+  .dot.done { background: #B49A6A; }
+  .dot.active { background: #7A6040; }
+  .stage-lbl { font-size: 12px; color: #9A8060; margin-left: 4px; }
+
+  .scene-card {
+    background: #fff;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #EDE6D8;
+    margin-bottom: 12px;
+  }
+  .scene-top {
+    background: #F5EDD8;
+    height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .loc-tag {
+    position: absolute;
+    top: 8px; left: 12px;
+    font-size: 11px;
+    color: #9A8060;
+    font-weight: 500;
+  }
+  .chars {
+    display: flex;
+    gap: 32px;
+    align-items: flex-end;
+  }
+  .ch { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .ch-h { width: 30px; height: 30px; border-radius: 50%; }
+  .ch-b { width: 22px; height: 32px; border-radius: 11px 11px 4px 4px; }
+  .ch-l { font-size: 10px; color: #9A8060; font-weight: 500; }
+  .me .ch-h { background: #A8C4D8; }
+  .me .ch-b { background: #6A9BBF; }
+  .daen .ch-h { background: #D4A882; }
+  .daen .ch-b { background: #9A6E4A; }
+
+  .scene-body { padding: 16px 18px; }
+  .narr {
+    font-size: 13px;
+    color: #9A8060;
+    font-style: italic;
+    line-height: 1.6;
+    margin-bottom: 10px;
+  }
+  .spk { font-size: 12px; font-weight: 600; color: #9A8060; margin-bottom: 4px; }
+  .dlg { font-size: 16px; color: #2C2A24; line-height: 1.75; }
+
+  .choices { display: flex; flex-direction: column; gap: 10px; margin-bottom: 0; }
+  .cbtn {
+    background: #fff;
+    border: 1px solid #D9D3C8;
+    border-radius: 12px;
+    padding: 14px 16px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 15px;
+    color: #2C2A24;
+    line-height: 1.55;
+    width: 100%;
+    transition: background .15s;
+    -webkit-appearance: none;
+  }
+  .cbtn:active { background: #F5EDD8; }
+  .cbtn:disabled { cursor: default; opacity: .5; }
+  .lbl {
+    font-size: 12px;
+    font-weight: 600;
+    color: #9A8060;
+    margin-right: 6px;
+  }
+
+  .action-btn {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 12px;
+    -webkit-appearance: none;
+  }
+  .action-btn.pri { background: #8B7355; color: #FFF8EC; }
+  .action-btn.pri:active { background: #7A6040; }
+  .action-btn.sec {
+    background: transparent;
+    border: 1px solid #D9D3C8;
+    color: #2C2A24;
+  }
+  .action-btn.sec:active { background: #F5EDD8; }
+
+  .end-card {
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #EDE6D8;
+    padding: 32px 24px;
+    text-align: center;
+  }
+  .end-icon {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .end-title { font-size: 20px; font-weight: 600; margin-bottom: 8px; }
+  .end-line {
+    width: 32px; height: 1px;
+    margin: 0 auto 16px;
+  }
+  .end-msg {
+    font-size: 15px;
+    color: #6A6058;
+    line-height: 1.8;
+    text-align: left;
+    margin-bottom: 24px;
+  }
+  .end-msg p { margin-bottom: 12px; }
+  .end-divider {
+    border: none;
+    border-top: 1px solid #EDE6D8;
+    margin: 0 0 16px;
+  }
+  .end-hint {
+    font-size: 12px;
+    color: #9A8060;
+    margin-bottom: 10px;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="header">
+    <div class="header-title">온유</div>
+    <div class="header-sub">부드러운 마음 체험 활동</div>
+    <div class="header-line"></div>
+  </div>
+  <div class="stage-bar" id="sbar"></div>
+  <div id="main"></div>
+</div>
+
+<script>
+const N = {
+  'start': {
+    stage:0, loc:"학교 벤치, 점심 시간",
+    narr:"단짝 친구 다은이가 밥을 먹다 조심스럽게 말을 꺼냈다.",
+    speaker:"다은",
+    dlg:"\"있잖아... 나 동아리 그만둘까봐. 내가 낸 아이디어를 부장이 그냥 무시했는데, 나중에 지수가 비슷한 거 내니까 엄청 칭찬하는 거야.\"",
+    choices:[
+      {text:"\"진짜? 그거 완전 억울하겠다.\"", next:'main1'},
+      {text:"\"아 그 부장 원래 그렇잖아ㅋㅋ 신경 꺼, 걔 작년에도...\"", next:'b0a'},
+      {text:"\"어, 나도 그런 적 있었는데! 내가 발표할 때 말이야...\"", next:'b0b'},
+    ]
+  },
+  'b0a':{
+    stage:0, loc:"학교 벤치, 점심 시간",
+    narr:"다은이가 잠깐 웃다가 금방 표정이 흐려졌다.",
+    speaker:"다은",
+    dlg:"\"그치ㅋㅋ 근데... 그래도 진짜 억울해. 내가 못난 건지 부장이 이상한 건지 모르겠어.\"",
+    choices:[
+      {text:"\"그 감정 맞아. 네가 못난 게 아니야.\"", next:'main1'},
+      {text:"\"아 걔 진짜 이상하다니까. 왜 너한테만 그러는 거야, 걔 원래...\"", next:'b_end1'},
+    ]
+  },
+  'b0b':{
+    stage:0, loc:"학교 벤치, 점심 시간",
+    narr:"다은이가 어색하게 웃으며 잠깐 침묵했다.",
+    speaker:"다은",
+    dlg:"\"어... 그래?\" (자기 얘기를 더 꺼내고 싶었는데 분위기가 달라진 것 같다)",
+    choices:[
+      {text:"\"아 미안, 지금 내 얘기 할 게 아니었다. 너 많이 억울했겠다.\"", next:'main1'},
+      {text:"\"어, 그래서 내가 어떻게 했냐면...\" (계속 내 얘기를 이어간다)", next:'b_end1'},
+    ]
+  },
+  'b_end1':{
+    stage:0, loc:"학교 벤치, 점심 시간",
+    narr:"다은이가 점점 조용해졌다.",
+    speaker:"다은",
+    dlg:"\"...어, 그렇구나.\" (핸드폰을 꺼냈다. 더 얘기하고 싶지 않은 것 같았다.)",
+    isEnd:true, endType:'bad',
+    endTitle:"마음의 문이 닫혔어요",
+    endMsg:"다은이는 그날 이후 이런 얘기를 꺼내지 않았어요. 가장 필요한 순간, 충분히 들어주지 못했어요.\n\n온유함은 상대의 이야기가 끝날 때까지 나를 내려놓는 것이에요."
+  },
+  'main1':{
+    stage:1, loc:"학교 벤치, 점심 시간",
+    narr:"다은이가 조금 말문이 열렸다.",
+    speaker:"다은",
+    dlg:"\"맞아... 근데 나만 그렇게 느끼는 건가? 내가 너무 예민한 건지도 몰라.\"",
+    choices:[
+      {text:"\"예민한 게 아니야. 그 상황 자체가 억울한 거야.\"", next:'main2'},
+      {text:"\"음... 솔직히 아이디어가 진짜 달랐던 건지 모르잖아. 혹시 비슷하게 보인 거 아닐까?\"", next:'b1a'},
+      {text:"\"에이, 너무 상처받지 마! 다은이 아이디어 원래 좋잖아.\"", next:'b1b'},
+    ]
+  },
+  'b1a':{
+    stage:1, loc:"학교 벤치, 점심 시간",
+    narr:"다은이의 표정이 굳었다.",
+    speaker:"다은",
+    dlg:"\"...그래? 내가 착각한 건가.\" (목소리가 낮아졌다)",
+    choices:[
+      {text:"\"아, 미안. 내 말이 이상하게 들렸지? 억울한 거 맞아.\"", next:'main2'},
+      {text:"\"아니 그냥 솔직하게 말한 거야. 좀 객관적으로 봐봐.\"", next:'b_end2'},
+    ]
+  },
+  'b1b':{
+    stage:1, loc:"학교 벤치, 점심 시간",
+    narr:"다은이가 시큰둥하게 고개를 끄덕였다.",
+    speaker:"다은",
+    dlg:"\"...뭐, 고마워.\" (뭔가 더 말하고 싶었는데 공감을 못 받은 것 같다)",
+    choices:[
+      {text:"\"어? 내가 좀 가볍게 말했나? 지금 진짜 많이 속상하지?\"", next:'main2'},
+      {text:"\"진짜야! 다은이 아이디어 진짜 창의적잖아. 부장 눈이 없는 거야!\"", next:'b_end2'},
+    ]
+  },
+  'b_end2':{
+    stage:1, loc:"학교 벤치, 점심 시간",
+    narr:"다은이가 억지 미소를 지으며 밥을 먹기 시작했다.",
+    speaker:"다은",
+    dlg:"\"...그래, 고마워.\" (속마음은 여전히 그대로였다. 더 이상 이 얘기를 꺼내지 않았다.)",
+    isEnd:true, endType:'bad',
+    endTitle:"마음의 문이 닫혔어요",
+    endMsg:"위로하려 했지만 다은이는 충분히 공감받지 못했어요. 좋은 말도 상대의 감정을 먼저 인정하지 않으면 닿지 않아요.\n\n온유함은 내 말보다 상대의 감정을 먼저 두는 것이에요."
+  },
+  'main2':{
+    stage:2, loc:"학교 벤치, 점심 시간",
+    narr:"다은이가 한숨을 쉬었다.",
+    speaker:"다은",
+    dlg:"\"그렇긴 한데... 그냥 동아리 그만둘까봐. 어차피 분위기도 별로고, 계속 있어봤자 뭐해.\"",
+    choices:[
+      {text:"\"그만두고 싶은 마음 이해해. 근데 지금 결정하기엔 너무 속상한 상태 아닐까?\"", next:'main3'},
+      {text:"\"당연하지! 그냥 나와버려. 거기 있을 이유가 없잖아.\"", next:'b2a'},
+      {text:"\"아니, 그만두면 안 되지. 힘들어도 버텨야 해.\"", next:'b2b'},
+    ]
+  },
+  'b2a':{
+    stage:2, loc:"학교 벤치, 점심 시간",
+    narr:"다은이가 잠깐 멈추며 불안해 보였다.",
+    speaker:"다은",
+    dlg:"\"...그래? 그냥 나와버려도 돼?\" (확신이 없어 보였다)",
+    choices:[
+      {text:"\"아, 내가 너무 빨리 말했다. 네가 진짜 원하는 게 뭔지가 중요해.\"", next:'main3'},
+      {text:"\"어, 그냥 나오면 속 시원하잖아. 미련 두지 마.\"", next:'b_end3'},
+    ]
+  },
+  'b2b':{
+    stage:2, loc:"학교 벤치, 점심 시간",
+    narr:"다은이가 살짝 눈살을 찌푸렸다.",
+    speaker:"다은",
+    dlg:"\"...버텨야 해? 내가 억울한 건데 내가 버텨야 해?\" (서운한 기색이 역력했다)",
+    choices:[
+      {text:"\"아 미안, 네가 결정하는 거야. 내가 너무 앞서 말했다.\"", next:'main3'},
+      {text:"\"아니, 동아리가 중요하잖아. 포기하면 후회해.\"", next:'b_end3'},
+    ]
+  },
+  'b_end3':{
+    stage:2, loc:"학교 벤치, 점심 시간",
+    narr:"표정이 굳은 채로 더 이상 말이 없었다.",
+    speaker:"다은",
+    dlg:"\"...그래. 알겠어.\" (점심이 끝나고 다은이는 먼저 일어났다.)",
+    isEnd:true, endType:'bad',
+    endTitle:"마음의 문이 닫혔어요",
+    endMsg:"다은이에게 필요한 건 해결책이나 충고가 아니었어요. 판단도, 강요도 아닌 — 충분히 들어주는 마음이었어요.\n\n온유함은 내 답을 내려놓고 상대의 속도에 맞춰주는 것이에요."
+  },
+  'main3':{
+    stage:3, loc:"학교 벤치, 점심 시간",
+    narr:"다은이의 표정이 조금 부드러워졌다.",
+    speaker:"다은",
+    dlg:"\"맞아... 일단 좀 더 생각해볼게. 근데 너한테 얘기하니까 좀 나아지는 것 같아.\"",
+    choices:[
+      {text:"\"다행이다. 결정은 천천히 해. 나 언제든지 들을게.\"", next:'good_end'},
+      {text:"\"다행이다! 그래도 부장한테 직접 한번 말해보는 건 어때?\"", next:'b3a'},
+    ]
+  },
+  'b3a':{
+    stage:3, loc:"학교 벤치, 점심 시간",
+    narr:"다은이가 조금 움츠러들었다.",
+    speaker:"다은",
+    dlg:"\"음... 그건 좀 무서운데. 나 그런 거 잘 못해.\"",
+    choices:[
+      {text:"\"아, 안 해도 돼. 네 페이스대로 해. 내가 너무 앞서갔다.\"", next:'good_end'},
+      {text:"\"아니, 이번엔 해야 해. 직접 말해야 변하잖아.\"", next:'b_end3'},
+    ]
+  },
+  'good_end':{
+    isEnd:true, endType:'good',
+    endTitle:"부드러운 마음이 만든 공간",
+    endDlg:"\"...있어줘서 고마워. 네가 옆에 있어서 다행이다.\"",
+    endMsg:"해결된 건 아무것도 없었어요. 그런데도 다은이는 한결 가벼워졌어요.\n\n누군가 판단 없이 들어준다는 것, 그냥 옆에 있어준다는 것 — 그것만으로도 충분했어요.\n\n온유함은 문제를 없애는 게 아니라, 혼자가 아님을 느끼게 해주는 힘이에요."
+  }
+};
+
+const STAGES = 4;
+let cur = 'start', maxStage = 0;
+
+function charHTML() {
+  return `<div class="chars">
+    <div class="ch me"><div class="ch-h"></div><div class="ch-b"></div><div class="ch-l">나</div></div>
+    <div class="ch daen"><div class="ch-h"></div><div class="ch-b"></div><div class="ch-l">다은</div></div>
+  </div>`;
+}
+
+function dots(s) {
+  const bar = document.getElementById('sbar');
+  if (!bar) return;
+  bar.innerHTML = '';
+  for (let i = 0; i < STAGES; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < s ? ' done' : i === s ? ' active' : '');
+    bar.appendChild(d);
+  }
+  const l = document.createElement('span');
+  l.className = 'stage-lbl';
+  l.textContent = (Math.min(s, STAGES-1) + 1) + ' / ' + STAGES + '단계';
+  bar.appendChild(l);
+}
+
+function render() {
+  const node = N[cur];
+  if (!node) return;
+  const main = document.getElementById('main');
+
+  if (node.isEnd) {
+    const sbar = document.getElementById('sbar');
+    if (sbar) sbar.innerHTML = '';
+    renderEnd(node, main);
+    return;
+  }
+
+  const s = node.stage || 0;
+  if (s > maxStage) maxStage = s;
+  dots(Math.min(maxStage, STAGES-1));
+
+  const labels = ['A','B','C'];
+  main.innerHTML = `
+    <div class="scene-card">
+      <div class="scene-top">
+        <span class="loc-tag">${node.loc}</span>
+        ${charHTML()}
+      </div>
+      <div class="scene-body">
+        ${node.narr ? `<div class="narr">${node.narr}</div>` : ''}
+        <div class="spk">${node.speaker}</div>
+        <div class="dlg">${node.dlg}</div>
+      </div>
+    </div>
+    <div class="choices" id="cw"></div>
+  `;
+
+  const cw = document.getElementById('cw');
+  node.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'cbtn';
+    btn.innerHTML = `<span class="lbl">${labels[i]}</span>${c.text}`;
+    btn.onclick = () => { cur = c.next; render(); };
+    cw.appendChild(btn);
+  });
+}
+
+function renderEnd(node, main) {
+  const isGood = node.endType === 'good';
+
+  const dlgCard = node.endDlg ? `
+    <div class="scene-card" style="margin-bottom:12px;">
+      <div class="scene-top"><span class="loc-tag">학교 벤치, 점심 시간</span>${charHTML()}</div>
+      <div class="scene-body"><div class="spk">다은</div><div class="dlg">${node.endDlg}</div></div>
+    </div>` : '';
+
+  const msgLines = node.endMsg.split('\n\n').map(l => `<p>${l}</p>`).join('');
+
+  const svgIcon = isGood
+    ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z" fill="#C8A060"/></svg>`
+    : `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#B0A090" stroke-width="1.5"/><path d="M12 7v5.5M12 15.5v1" stroke="#B0A090" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+
+  main.innerHTML = dlgCard + `
+    <div class="end-card">
+      <div class="end-icon" style="background:${isGood ? '#F5EDD8' : '#F0ECE4'};">${svgIcon}</div>
+      <div class="end-title" style="color:${isGood ? '#7A6040' : '#4A4038'};">${node.endTitle}</div>
+      <div class="end-line" style="background:${isGood ? '#C8A060' : '#C8BEB0'};"></div>
+      <div class="end-msg">${msgLines}</div>
+      <hr class="end-divider">
+      <div class="end-hint">처음부터 다시 해볼까요?</div>
+      <button class="action-btn sec" onclick="restart()">다시 시작하기</button>
+    </div>
+  `;
+}
+
+function restart() {
+  cur = 'start'; maxStage = 0;
+  document.getElementById('sbar').innerHTML = '';
+  document.getElementById('main').innerHTML = '';
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

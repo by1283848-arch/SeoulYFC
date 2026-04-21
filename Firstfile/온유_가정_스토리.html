@@ -1,0 +1,359 @@
+
+<h2 class="sr-only">온유 체험 활동 — 가정편. 선택에 따라 동생 지훈이와의 관계가 달라지는 분기형 스토리</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+#gw{font-family:var(--font-sans);max-width:560px;margin:1rem auto;padding:0 2px;}
+.sbar{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--color-border-tertiary);transition:background .3s;}
+.dot.done{background:#B49A6A;}.dot.active{background:#7A6040;}
+.slbl{font-size:12px;color:var(--color-text-secondary);margin-left:4px;}
+.sc{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin-bottom:12px;}
+.stop{height:96px;background:#EEF3F0;display:flex;align-items:center;justify-content:center;position:relative;}
+.ltag{position:absolute;top:8px;left:12px;font-size:11px;color:var(--color-text-secondary);font-weight:500;}
+.chars{display:flex;gap:36px;align-items:flex-end;}
+.ch{display:flex;flex-direction:column;align-items:center;gap:3px;}
+.ch-h{width:28px;height:28px;border-radius:50%;}
+.ch-b{width:20px;height:30px;border-radius:10px 10px 4px 4px;}
+.ch-l{font-size:10px;color:var(--color-text-secondary);font-weight:500;}
+.me .ch-h{background:#A8C4D8;}.me .ch-b{background:#6A9BBF;}
+.jihun .ch-h{background:#8FC4A8;}.jihun .ch-b{background:#5A9E80;}
+.sbody{padding:1rem 1.25rem;}
+.narr{font-size:13px;color:var(--color-text-tertiary);font-style:italic;line-height:1.6;margin-bottom:10px;}
+.spk{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:3px;}
+.dlg{font-size:15px;color:var(--color-text-primary);line-height:1.7;}
+.choices{display:flex;flex-direction:column;gap:8px;margin-bottom:0;}
+.cbtn{background:var(--color-background-primary);border:.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:11px 14px;text-align:left;cursor:pointer;font-size:14px;color:var(--color-text-primary);line-height:1.5;width:100%;transition:background .15s;}
+.cbtn:hover:not(:disabled){background:var(--color-background-secondary);}
+.lbl{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-right:6px;}
+.abtn{width:100%;padding:12px;border:none;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;margin-top:4px;}
+.abtn.pri{background:#8B7355;color:#FFF8EC;}
+.abtn.pri:hover{background:#7A6040;}
+.abtn.sec{background:transparent;border:.5px solid var(--color-border-secondary);color:var(--color-text-primary);}
+.abtn.sec:hover{background:var(--color-background-secondary);}
+.ewrap{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:2rem 1.5rem;text-align:center;}
+.eico{width:48px;height:48px;border-radius:50%;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;}
+.etit{font-size:18px;font-weight:500;margin-bottom:8px;}
+.esub{font-size:14px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:1.5rem;text-align:left;}
+.esub p{margin-bottom:10px;}
+.ediv{border:none;border-top:.5px solid var(--color-border-tertiary);margin:1.25rem 0;}
+@media(prefers-color-scheme:dark){
+  .stop{background:#1C2820;}
+  .abtn.pri{background:#7A6040;color:#FFF0D0;}
+}
+</style>
+
+<div id="gw">
+  <div class="sbar" id="sbar"></div>
+  <div id="main"></div>
+</div>
+
+<script>
+const N = {
+  'start':{
+    stage:0, loc:"집, 지훈이 방",
+    narr:"저녁 식사 시간인데 동생 지훈이(중2)가 방에서 나오지 않는다. 노크하고 들어가니 지훈이가 뭔가를 급히 숨기려 했다. 성적표다.",
+    speaker:"지훈",
+    dlg:"\"...어, 형/언니. 그냥 나가줘.\"",
+    choices:[
+      {text:"(말없이 옆에 와서 조용히 앉는다)", next:'main1'},
+      {text:"\"야, 뭐 숨기는 거야? 성적표잖아.\"", next:'b0a'},
+      {text:"\"밥 먹어야지, 일단. 나중에 얘기해.\" (나오려 한다)", next:'b0b'},
+    ]
+  },
+  'b0a':{
+    stage:0, loc:"집, 지훈이 방",
+    narr:"지훈이가 성적표를 등 뒤로 감쌌다.",
+    speaker:"지훈",
+    dlg:"\"...상관없잖아. 그냥 나가.\"",
+    choices:[
+      {text:"\"미안, 내가 좀 세게 들어갔다. 그냥 옆에 있어도 돼?\"", next:'main1'},
+      {text:"\"상관없긴, 성적 얼마나 나왔어?\"", next:'b_ea'},
+    ]
+  },
+  'b0b':{
+    stage:0, loc:"집, 지훈이 방",
+    narr:"나가려는데 지훈이가 입술을 꽉 깨물고 있는 게 보였다.",
+    speaker:"지훈",
+    dlg:"\"...어. 나가.\" (목소리가 조금 떨렸다)",
+    choices:[
+      {text:"(멈추며) \"지훈아, 나 들어가도 돼?\" (다시 돌아온다)", next:'main1'},
+      {text:"(그냥 문을 닫고 나온다)", next:'b_ea'},
+    ]
+  },
+  'b_ea':{
+    isEnd:true, endType:'bad',
+    endTitle:"문이 닫혔어요",
+    endDlg:"\"...\" (지훈이는 그날 밤 이불을 뒤집어쓰고 혼자 있었다.)",
+    endMsg:"동생이 가장 힘든 순간, 문을 닫아버렸어요.\n\n온유함은 때로 그냥 옆에 머물러 있는 용기예요."
+  },
+  'main1':{
+    stage:1, loc:"집, 지훈이 방",
+    narr:"한참 침묵이 흘렀다.",
+    speaker:"지훈",
+    dlg:"\"...형/언니, 왜 아직 있어.\"",
+    choices:[
+      {text:"\"그냥. 같이 있으면 안 돼?\"", next:'main2'},
+      {text:"\"무슨 일 있어? 말해봐.\"", next:'b1a'},
+      {text:"\"성적표 때문이지? 얼마나 나왔어?\"", next:'b1b'},
+    ]
+  },
+  'b1a':{
+    stage:1, loc:"집, 지훈이 방",
+    narr:"지훈이가 벽 쪽으로 몸을 돌렸다.",
+    speaker:"지훈",
+    dlg:"\"...없다고. 그냥 나가줘.\"",
+    choices:[
+      {text:"\"알겠어. 나 그냥 여기 있을게.\" (그래도 앉아 있는다)", next:'main2'},
+      {text:"\"말 안 하면 어떻게 도와줘. 얘기를 해야지.\"", next:'b_eb'},
+    ]
+  },
+  'b1b':{
+    stage:1, loc:"집, 지훈이 방",
+    narr:"지훈이의 표정이 굳었다.",
+    speaker:"지훈",
+    dlg:"\"...상관없잖아, 그게.\" (목소리가 낮아졌다)",
+    choices:[
+      {text:"\"미안, 너무 빨리 들어갔다. 그냥 옆에 있을게.\"", next:'main2'},
+      {text:"\"상관없긴, 성적 많이 떨어졌어?\"", next:'b_eb'},
+    ]
+  },
+  'b_eb':{
+    isEnd:true, endType:'bad',
+    endTitle:"문이 닫혔어요",
+    endDlg:"\"...나가. 진짜로.\" (이불을 뒤집어썼다)",
+    endMsg:"동생이 조금씩 마음을 열려 했는데, 너무 빨리 밀고 들어갔어요.\n\n온유함은 상대가 준비될 때까지 기다려주는 것이에요."
+  },
+  'main2':{
+    stage:2, loc:"집, 지훈이 방",
+    narr:"한참이 지나 지훈이가 조용히 말했다.",
+    speaker:"지훈",
+    dlg:"\"...형/언니, 나 공부 진짜 못하는 것 같아.\"",
+    choices:[
+      {text:"\"그렇게 느껴지는구나.\" (그냥 듣는다)", next:'main3'},
+      {text:"\"에이, 무슨 소리야. 지훈이 원래 잘하잖아.\"", next:'b2a'},
+      {text:"\"왜? 어떤 과목이 특히 어려워?\"", next:'b2b'},
+    ]
+  },
+  'b2a':{
+    stage:2, loc:"집, 지훈이 방",
+    narr:"지훈이가 고개를 저었다.",
+    speaker:"지훈",
+    dlg:"\"...아니야. 진짜 못해.\"",
+    choices:[
+      {text:"\"내가 그냥 위로하려 했는데. 진짜로 많이 힘들구나?\"", next:'main3'},
+      {text:"\"진짜야, 지훈이 원래 똑똑하잖아. 이번 한 번이야.\"", next:'b_ec'},
+    ]
+  },
+  'b2b':{
+    stage:2, loc:"집, 지훈이 방",
+    narr:"지훈이가 입을 닫았다.",
+    speaker:"지훈",
+    dlg:"\"...그냥 다 모르겠어.\" (더 말하기 싫어 보였다)",
+    choices:[
+      {text:"\"미안, 내가 너무 빨리 해결하려 했지. 많이 힘들구나.\"", next:'main3'},
+      {text:"\"어떤 과목인지는 말해줘야 도와줄 거 아니야.\"", next:'b_ec'},
+    ]
+  },
+  'b_ec':{
+    isEnd:true, endType:'bad',
+    endTitle:"문이 닫혔어요",
+    endDlg:"\"...형/언니한테 말하지 말 걸 그랬다.\" (한숨을 쉬었다)",
+    endMsg:"동생이 마음을 열기 시작했는데 충분히 받아주지 못했어요.\n\n온유함은 상대의 감정을 내 방식으로 고치려 하지 않는 것이에요."
+  },
+  'main3':{
+    stage:3, loc:"집, 지훈이 방",
+    narr:"지훈이가 성적표를 꺼내 멍하니 바라봤다.",
+    speaker:"지훈",
+    dlg:"\"...엄마 아빠한테 어떡하지. 완전 실망하실 텐데.\"",
+    choices:[
+      {text:"\"그게 제일 무섭겠다.\"", next:'main4'},
+      {text:"\"말씀드려야지. 숨기면 나중에 더 커져.\"", next:'b3a'},
+      {text:"\"내가 같이 말해줄게. 그게 나을 것 같아.\"", next:'b3b'},
+    ]
+  },
+  'b3a':{
+    stage:3, loc:"집, 지훈이 방",
+    narr:"지훈이가 성적표를 도로 집어넣었다.",
+    speaker:"지훈",
+    dlg:"\"...겁나는데 어떡하냐고.\" (서운해 보였다)",
+    choices:[
+      {text:"\"미안, 그 마음부터 들어줬어야 했는데. 겁나는 거 당연하지.\"", next:'main4'},
+      {text:"\"그래도 말씀드려야 해. 어차피 아시게 될 텐데.\"", next:'b_ed'},
+    ]
+  },
+  'b3b':{
+    stage:3, loc:"집, 지훈이 방",
+    narr:"지훈이가 고개를 저었다.",
+    speaker:"지훈",
+    dlg:"\"...그게 더 창피해. 형/언니한테 이런 거 다 보여준 것도 창피한데.\"",
+    choices:[
+      {text:"\"미안, 내가 너무 앞서갔다. 지금 창피하고 겁나지?\"", next:'main4'},
+      {text:"\"왜 창피해. 도와줄게, 같이 말씀드리는 게 맞아.\"", next:'b_ed'},
+    ]
+  },
+  'b_ed':{
+    isEnd:true, endType:'bad',
+    endTitle:"문이 닫혔어요",
+    endDlg:"\"...그냥 됐어.\" (등을 돌렸다)",
+    endMsg:"동생의 두려움보다 해결책을 먼저 내밀었어요.\n\n온유함은 내 답을 잠시 내려놓고, 상대의 두려움에 먼저 머무는 것이에요."
+  },
+  'main4':{
+    stage:4, loc:"집, 지훈이 방",
+    narr:"지훈이가 눈을 붉히며 형/언니를 바라봤다.",
+    speaker:"지훈",
+    dlg:"\"...형/언니도 나 한심하지?\"",
+    choices:[
+      {text:"\"아니. 많이 힘들었겠다 싶어.\"", next:'main5'},
+      {text:"\"한심하긴, 지훈이 잘하잖아! 이번 한 번이야.\"", next:'b4a'},
+      {text:"\"솔직히 좀 그렇긴 한데, 그래도 괜찮아.\"", next:'b4b'},
+    ]
+  },
+  'b4a':{
+    stage:4, loc:"집, 지훈이 방",
+    narr:"지훈이가 고개를 저었다.",
+    speaker:"지훈",
+    dlg:"\"...아니야. 진짜 한심한 거 맞아.\"",
+    choices:[
+      {text:"\"그 말이 위로가 안 됐지? 미안. 많이 힘들었겠다.\"", next:'main5'},
+      {text:"\"아니야 진짜! 지훈이 충분히 잘하고 있어.\"", next:'b_ee'},
+    ]
+  },
+  'b4b':{
+    stage:4, loc:"집, 지훈이 방",
+    narr:"지훈이가 더 울적해 보였다.",
+    speaker:"지훈",
+    dlg:"\"...그렇지.\" (목소리가 작아졌다)",
+    choices:[
+      {text:"\"아, 그 말 잘못됐다. 한심하다고 생각 안 해.\"", next:'main5'},
+      {text:"\"근데 다음엔 좀 더 열심히는 해야지.\"", next:'b_ee'},
+    ]
+  },
+  'b_ee':{
+    isEnd:true, endType:'bad',
+    endTitle:"문이 닫혔어요",
+    endDlg:"\"...피곤해. 이제 나가줘.\" (이불을 끌어당겼다)",
+    endMsg:"동생에게 필요한 건 판단도, 과한 위로도 아니었어요. 있는 그대로 봐주는 눈빛 하나였어요.\n\n온유함은 상대를 고치려 하지 않는 것이에요."
+  },
+  'main5':{
+    stage:4, loc:"집, 지훈이 방",
+    narr:"지훈이가 조금 눈물을 삼켰다.",
+    speaker:"지훈",
+    dlg:"\"...형/언니, 옆에 있어줘서 고마워.\"",
+    choices:[
+      {text:"\"나도 고마워. 말해줘서.\"", next:'good_end'},
+      {text:"\"당연하지~ 그래서 이제 어떻게 할 거야?\"", next:'b5a'},
+    ]
+  },
+  'b5a':{
+    stage:4, loc:"집, 지훈이 방",
+    narr:"지훈이가 조금 움츠러들었다.",
+    speaker:"지훈",
+    dlg:"\"...아직 모르겠어.\"",
+    choices:[
+      {text:"\"그래, 천천히 생각해. 나 옆에 있을게.\"", next:'good_end'},
+      {text:"\"일단 공부 계획부터 같이 세워보자, 내가 도와줄게.\"", next:'b_ee'},
+    ]
+  },
+  'good_end':{
+    isEnd:true, endType:'good',
+    endTitle:"온유함이 열어준 문",
+    endDlg:"\"...형/언니, 고마워. 오늘 형/언니 없었으면 어쩔 뻔했어.\"",
+    endMsg:"성적이 오른 건 아니에요. 엄마 아빠한테 어떻게 말할지도 아직 몰라요.\n\n그런데 지훈이는 혼자가 아니라는 걸 느꼈어요. 그것만으로도 충분했어요.\n\n온유함은 문제를 해결해 주는 게 아니라, 혼자 감당하지 않아도 된다는 걸 알려주는 것이에요."
+  }
+};
+
+const STAGES = 5;
+let cur = 'start', maxStage = 0;
+
+function charHTML() {
+  return `<div class="chars">
+    <div class="ch me"><div class="ch-h"></div><div class="ch-b"></div><div class="ch-l">나</div></div>
+    <div class="ch jihun"><div class="ch-h"></div><div class="ch-b"></div><div class="ch-l">지훈</div></div>
+  </div>`;
+}
+
+function dots(s) {
+  const bar = document.getElementById('sbar');
+  if (!bar) return;
+  bar.innerHTML = '';
+  for (let i = 0; i < STAGES; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i < s ? ' done' : i === s ? ' active' : '');
+    bar.appendChild(d);
+  }
+  const l = document.createElement('span');
+  l.className = 'slbl';
+  l.textContent = (Math.min(s, STAGES-1) + 1) + ' / ' + STAGES + '단계';
+  bar.appendChild(l);
+}
+
+function render() {
+  const node = N[cur];
+  if (!node) return;
+  const main = document.getElementById('main');
+  if (node.isEnd) {
+    const sbar = document.getElementById('sbar');
+    if (sbar) sbar.innerHTML = '';
+    renderEnd(node, main);
+    return;
+  }
+  const s = node.stage || 0;
+  if (s > maxStage) maxStage = s;
+  dots(Math.min(maxStage, STAGES-1));
+  const labels = ['A','B','C'];
+  main.innerHTML = `
+    <div class="sc">
+      <div class="stop"><span class="ltag">${node.loc}</span>${charHTML()}</div>
+      <div class="sbody">
+        ${node.narr ? `<div class="narr">${node.narr}</div>` : ''}
+        <div class="spk">${node.speaker}</div>
+        <div class="dlg">${node.dlg}</div>
+      </div>
+    </div>
+    <div class="choices" id="cw"></div>
+  `;
+  const cw = document.getElementById('cw');
+  node.choices.forEach((c, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'cbtn';
+    btn.innerHTML = `<span class="lbl">${labels[i]}</span>${c.text}`;
+    btn.onclick = () => { cur = c.next; render(); };
+    cw.appendChild(btn);
+  });
+}
+
+function renderEnd(node, main) {
+  const isGood = node.endType === 'good';
+  const msgLines = node.endMsg.split('\n\n').map(l => `<p>${l}</p>`).join('');
+  const dlgCard = node.endDlg ? `
+    <div class="sc" style="margin-bottom:12px;">
+      <div class="stop"><span class="ltag">집, 지훈이 방</span>${charHTML()}</div>
+      <div class="sbody"><div class="spk">지훈</div><div class="dlg">${node.endDlg}</div></div>
+    </div>` : '';
+  main.innerHTML = dlgCard + `
+    <div class="ewrap">
+      <div class="eico" style="background:${isGood ? '#EEF7F2' : 'var(--color-background-secondary)'};">
+        ${isGood
+          ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z" fill="#5A9E80"/></svg>`
+          : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--color-border-secondary)" stroke-width="1.5"/><path d="M12 7v5.5M12 15.5v1" stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round"/></svg>`
+        }
+      </div>
+      <div class="etit" style="color:${isGood ? '#3A7A5A' : 'var(--color-text-primary)'};">${node.endTitle}</div>
+      <div style="width:32px;height:1px;background:${isGood ? '#5A9E80' : 'var(--color-border-secondary)'};margin:10px auto 16px;"></div>
+      <div class="esub">${msgLines}</div>
+      <hr class="ediv">
+      <div style="font-size:12px;color:var(--color-text-tertiary);margin-bottom:10px;">처음부터 다시 해볼까요?</div>
+      <button class="abtn sec" style="width:auto;padding:10px 24px;" onclick="restart()">다시 시작하기</button>
+    </div>
+  `;
+}
+
+function restart() {
+  cur = 'start'; maxStage = 0;
+  document.getElementById('gw').innerHTML = `<div class="sbar" id="sbar"></div><div id="main"></div>`;
+  render();
+}
+
+render();
+</script>
