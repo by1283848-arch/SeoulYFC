@@ -1,14 +1,390 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>온유 — 부드러운 마음 체험</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: #FAF8F3;
+      color: #2C2A24;
+      min-height: 100vh;
+    }
+
+    #wrap {
+      max-width: 520px;
+      margin: 0 auto;
+      padding: 48px 20px 64px;
+    }
+
+    .hero {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    .hero-badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      color: #9A8060;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .hero-title {
+      font-size: 40px;
+      font-weight: 700;
+      color: #2C2A24;
+      letter-spacing: .04em;
+      margin-bottom: 12px;
+    }
+    .hero-line {
+      width: 40px;
+      height: 1px;
+      background: #C8A060;
+      margin: 0 auto 16px;
+    }
+    .hero-desc {
+      font-size: 15px;
+      color: #6A6058;
+      line-height: 1.8;
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      color: #B0A090;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .cards {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      display: block;
+      background: #fff;
+      border: 1px solid #EDE6D8;
+      border-radius: 18px;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .card:active {
+      transform: scale(.985);
+    }
+
+    .card-top {
+      height: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px;
+      position: relative;
+    }
+    .card-top-left {
+      display: flex;
+      align-items: flex-end;
+      gap: 28px;
+    }
+    .ch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+    }
+    .ch-h { width: 28px; height: 28px; border-radius: 50%; }
+    .ch-b { width: 20px; height: 30px; border-radius: 10px 10px 4px 4px; }
+    .ch-l { font-size: 10px; color: rgba(255,255,255,.7); font-weight: 500; }
+
+    .me .ch-h { background: rgba(168,196,216,.9); }
+    .me .ch-b { background: rgba(106,155,191,.9); }
+
+    .card-arrow {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .card-body {
+      padding: 16px 20px 18px;
+    }
+    .card-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      margin-bottom: 6px;
+    }
+    .card-title {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #2C2A24;
+    }
+    .card-sub {
+      font-size: 13px;
+      color: #9A8060;
+      line-height: 1.55;
+    }
+    .card-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 12px;
+    }
+    .card-stages {
+      font-size: 12px;
+      color: #B0A090;
+    }
+    .card-dots {
+      display: flex;
+      gap: 4px;
+    }
+    .card-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #E8E2D8;
+    }
+
+    /* 단톡방편 — 보라 */
+    .card-dandok .card-top { background: #EEE8F8; }
+    .card-dandok .friend .ch-h { background: #9A8AC4; }
+    .card-dandok .friend .ch-b { background: #7060A0; }
+    .card-dandok .ch-l { color: #9A8AC4; }
+    .card-dandok .me .ch-l { color: #A8C4D8; }
+    .card-dandok .card-arrow { background: rgba(112,96,160,.12); }
+    .card-dandok .card-tag { color: #7060A0; }
+    .card-dandok .card-dot { background: #D4CEEC; }
+
+    /* 고백편 — 장미 */
+    .card-confession .card-top { background: #F5EAF0; }
+    .card-confession .friend .ch-h { background: #D4829A; }
+    .card-confession .friend .ch-b { background: #A85872; }
+    .card-confession .ch-l { color: #D4829A; }
+    .card-confession .me .ch-l { color: #A8C4D8; }
+    .card-confession .card-arrow { background: rgba(168,88,114,.12); }
+    .card-confession .card-tag { color: #A85872; }
+    .card-confession .card-dot { background: #EDD4DC; }
+
+    /* 활동편 — 황금 */
+    .card-activity .card-top { background: #F5EDD8; }
+    .card-activity .friend .ch-h { background: #D4A882; }
+    .card-activity .friend .ch-b { background: #9A6E4A; }
+    .card-activity .ch-l { color: #D4A882; }
+    .card-activity .me .ch-l { color: #A8C4D8; }
+    .card-activity .card-arrow { background: rgba(154,110,74,.12); }
+    .card-activity .card-tag { color: #8B7355; }
+    .card-activity .card-dot { background: #E8D8BC; }
+
+    /* 가정편 — 초록 */
+    .card-family .card-top { background: #EEF3F0; }
+    .card-family .friend .ch-h { background: #8FC4A8; }
+    .card-family .friend .ch-b { background: #5A9E80; }
+    .card-family .ch-l { color: #8FC4A8; }
+    .card-family .me .ch-l { color: #A8C4D8; }
+    .card-family .card-arrow { background: rgba(90,158,128,.12); }
+    .card-family .card-tag { color: #3A7A5A; }
+    .card-family .card-dot { background: #C4DDD4; }
+
+    .footer {
+      text-align: center;
+      margin-top: 48px;
+      font-size: 12px;
+      color: #C0B8A8;
+      line-height: 1.8;
+    }
+    .footer-line {
+      width: 32px;
+      height: 1px;
+      background: #E0D8CC;
+      margin: 0 auto 16px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+<div id="wrap">
+
+  <div class="hero">
+    <div class="hero-badge">체험 활동</div>
+    <div class="hero-title">온유</div>
+    <div class="hero-line"></div>
+    <div class="hero-desc">
+      부드러운 마음으로 곁에 있어준다는 것.<br>
+      네 가지 상황 속에서 직접 경험해보세요.
+    </div>
+  </div>
+
+  <div class="section-label">스토리 선택</div>
+
+  <div class="cards">
+
+    <a class="card card-dandok" href="Firstfile/온유_단톡방편.html">
+      <div class="card-top">
+        <div class="card-top-left">
+          <div class="ch me">
+            <div class="ch-h"></div>
+            <div class="ch-b"></div>
+            <div class="ch-l">나</div>
+          </div>
+          <div class="ch friend">
+            <div class="ch-h"></div>
+            <div class="ch-b"></div>
+            <div class="ch-l">민아</div>
+          </div>
+        </div>
+        <div class="card-arrow">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3l5 5-5 5" stroke="#7060A0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-tag">단톡방편</div>
+        <div class="card-title">따돌림당한 친구, 민아</div>
+        <div class="card-sub">단톡방에서 혼자 남겨진 친구 옆에<br>어떻게 있어줄 수 있을까요?</div>
+        <div class="card-meta">
+          <span class="card-stages">5단계</span>
+          <div class="card-dots">
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-confession" href="Firstfile/온유_고백편.html">
+      <div class="card-top">
+        <div class="card-top-left">
+          <div class="ch me">
+            <div class="ch-h"></div>
+            <div class="ch-b"></div>
+            <div class="ch-l">나</div>
+          </div>
+          <div class="ch friend">
+            <div class="ch-h"></div>
+            <div class="ch-b"></div>
+            <div class="ch-l">소이</div>
+          </div>
+        </div>
+        <div class="card-arrow">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3l5 5-5 5" stroke="#A85872" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-tag">고백편</div>
+        <div class="card-title">거절당한 친구, 소이</div>
+        <div class="card-sub">고백 후 상처받은 친구의 아픔 옆에<br>함께 앉아줄 수 있을까요?</div>
+        <div class="card-meta">
+          <span class="card-stages">5단계</span>
+          <div class="card-dots">
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-activity" href="Firstfile/온유_활동.html">
+      <div class="card-top">
+        <div class="card-top-left">
+          <div class="ch me">
+            <div class="ch-h"></div>
+            <div class="ch-b"></div>
+            <div class="ch-l">나</div>
+          </div>
+          <div class="ch friend">
+            <div class="ch-h"></div>
+            <div class="ch-b"></div>
+            <div class="ch-l">다은</div>
+          </div>
+        </div>
+        <div class="card-arrow">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3l5 5-5 5" stroke="#8B7355" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-tag">동아리편</div>
+        <div class="card-title">억울함을 털어놓는 친구, 다은</div>
+        <div class="card-sub">동아리에서 무시당한 친구의 마음을<br>판단 없이 들어줄 수 있을까요?</div>
+        <div class="card-meta">
+          <span class="card-stages">4단계</span>
+          <div class="card-dots">
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+          </div>
+        </div>
+      </div>
+    </a>
+
+    <a class="card card-family" href="Firstfile/온유_가정_스토리.html">
+      <div class="card-top">
+        <div class="card-top-left">
+          <div class="ch me">
+            <div class="ch-h"></div>
+            <div class="ch-b"></div>
+            <div class="ch-l">나</div>
+          </div>
+          <div class="ch friend">
+            <div class="ch-h"></div>
+            <div class="ch-b"></div>
+            <div class="ch-l">지훈</div>
+          </div>
+        </div>
+        <div class="card-arrow">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+            <path d="M6 3l5 5-5 5" stroke="#3A7A5A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="card-tag">가정편</div>
+        <div class="card-title">성적표를 숨긴 동생, 지훈</div>
+        <div class="card-sub">힘든 걸 혼자 감추는 동생에게<br>온유함으로 다가갈 수 있을까요?</div>
+        <div class="card-meta">
+          <span class="card-stages">5단계</span>
+          <div class="card-dots">
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+            <div class="card-dot"></div>
+          </div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    <div class="footer-line"></div>
+    온유함은 문제를 해결해 주는 게 아니라<br>
+    혼자가 아님을 느끼게 해주는 힘이에요.
+  </div>
+
+</div>
 </body>
 </html>
