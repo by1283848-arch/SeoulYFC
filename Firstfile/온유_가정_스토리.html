@@ -1,49 +1,98 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>온유 — 가정편</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: #FAF8F3;
+      color: #2C2A24;
+      min-height: 100vh;
+    }
+    #gw { max-width: 520px; margin: 0 auto; padding: 20px 16px 60px; }
 
-<h2 class="sr-only">온유 체험 활동 — 가정편. 선택에 따라 동생 지훈이와의 관계가 달라지는 분기형 스토리</h2>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
-#gw{font-family:var(--font-sans);max-width:560px;margin:1rem auto;padding:0 2px;}
-.sbar{display:flex;align-items:center;gap:8px;margin-bottom:1.25rem;}
-.dot{width:10px;height:10px;border-radius:50%;background:var(--color-border-tertiary);transition:background .3s;}
-.dot.done{background:#B49A6A;}.dot.active{background:#7A6040;}
-.slbl{font-size:12px;color:var(--color-text-secondary);margin-left:4px;}
-.sc{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);overflow:hidden;margin-bottom:12px;}
-.stop{height:96px;background:#EEF3F0;display:flex;align-items:center;justify-content:center;position:relative;}
-.ltag{position:absolute;top:8px;left:12px;font-size:11px;color:var(--color-text-secondary);font-weight:500;}
-.chars{display:flex;gap:36px;align-items:flex-end;}
-.ch{display:flex;flex-direction:column;align-items:center;gap:3px;}
-.ch-h{width:28px;height:28px;border-radius:50%;}
-.ch-b{width:20px;height:30px;border-radius:10px 10px 4px 4px;}
-.ch-l{font-size:10px;color:var(--color-text-secondary);font-weight:500;}
-.me .ch-h{background:#A8C4D8;}.me .ch-b{background:#6A9BBF;}
-.jihun .ch-h{background:#8FC4A8;}.jihun .ch-b{background:#5A9E80;}
-.sbody{padding:1rem 1.25rem;}
-.narr{font-size:13px;color:var(--color-text-tertiary);font-style:italic;line-height:1.6;margin-bottom:10px;}
-.spk{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-bottom:3px;}
-.dlg{font-size:15px;color:var(--color-text-primary);line-height:1.7;}
-.choices{display:flex;flex-direction:column;gap:8px;margin-bottom:0;}
-.cbtn{background:var(--color-background-primary);border:.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);padding:11px 14px;text-align:left;cursor:pointer;font-size:14px;color:var(--color-text-primary);line-height:1.5;width:100%;transition:background .15s;}
-.cbtn:hover:not(:disabled){background:var(--color-background-secondary);}
-.lbl{font-size:12px;font-weight:500;color:var(--color-text-secondary);margin-right:6px;}
-.abtn{width:100%;padding:12px;border:none;border-radius:var(--border-radius-md);font-size:14px;font-weight:500;cursor:pointer;margin-top:4px;}
-.abtn.pri{background:#8B7355;color:#FFF8EC;}
-.abtn.pri:hover{background:#7A6040;}
-.abtn.sec{background:transparent;border:.5px solid var(--color-border-secondary);color:var(--color-text-primary);}
-.abtn.sec:hover{background:var(--color-background-secondary);}
-.ewrap{background:var(--color-background-primary);border:.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:2rem 1.5rem;text-align:center;}
-.eico{width:48px;height:48px;border-radius:50%;margin:0 auto 1rem;display:flex;align-items:center;justify-content:center;}
-.etit{font-size:18px;font-weight:500;margin-bottom:8px;}
-.esub{font-size:14px;color:var(--color-text-secondary);line-height:1.7;margin-bottom:1.5rem;text-align:left;}
-.esub p{margin-bottom:10px;}
-.ediv{border:none;border-top:.5px solid var(--color-border-tertiary);margin:1.25rem 0;}
-@media(prefers-color-scheme:dark){
-  .stop{background:#1C2820;}
-  .abtn.pri{background:#7A6040;color:#FFF0D0;}
-}
-</style>
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: #9A8060;
+      text-decoration: none;
+      margin-bottom: 20px;
+    }
 
+    .hdr { text-align: center; padding: 24px 0 20px; }
+    .hdr-t { font-size: 22px; font-weight: 700; color: #3A7A5A; }
+    .hdr-s { font-size: 13px; color: #9A8060; margin-top: 4px; }
+    .hdr-l { width: 32px; height: 1px; background: #5A9E80; margin: 12px auto 0; }
+
+    .sbar { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: #D9D3C8; transition: background .3s; }
+    .dot.done { background: #B49A6A; }
+    .dot.active { background: #7A6040; }
+    .slbl { font-size: 12px; color: #9A8060; margin-left: 4px; }
+
+    .sc { background: #fff; border-radius: 16px; border: 1px solid #EDE6D8; overflow: hidden; margin-bottom: 12px; }
+    .stop { height: 90px; background: #EEF3F0; display: flex; align-items: center; justify-content: center; position: relative; }
+    .ltag { position: absolute; top: 8px; left: 12px; font-size: 11px; color: #9A8060; font-weight: 500; }
+    .chars { display: flex; gap: 36px; align-items: flex-end; }
+    .ch { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .ch-h { width: 28px; height: 28px; border-radius: 50%; }
+    .ch-b { width: 20px; height: 30px; border-radius: 10px 10px 4px 4px; }
+    .ch-l { font-size: 10px; color: #9A8060; font-weight: 500; }
+    .me .ch-h { background: #A8C4D8; }
+    .me .ch-b { background: #6A9BBF; }
+    .jihun .ch-h { background: #8FC4A8; }
+    .jihun .ch-b { background: #5A9E80; }
+
+    .sbody { padding: 16px 18px; }
+    .narr { font-size: 13px; color: #9A8060; font-style: italic; line-height: 1.6; margin-bottom: 10px; }
+    .spk { font-size: 12px; font-weight: 600; color: #9A8060; margin-bottom: 4px; }
+    .dlg { font-size: 16px; color: #2C2A24; line-height: 1.75; }
+
+    .choices { display: flex; flex-direction: column; gap: 10px; }
+    .cbtn {
+      background: #fff;
+      border: 1px solid #D9D3C8;
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: left;
+      cursor: pointer;
+      font-size: 15px;
+      color: #2C2A24;
+      line-height: 1.55;
+      width: 100%;
+      -webkit-appearance: none;
+    }
+    .cbtn:active { background: #EEF3F0; }
+    .lbl { font-size: 12px; font-weight: 600; color: #9A8060; margin-right: 6px; }
+
+    .ewrap { background: #fff; border-radius: 16px; border: 1px solid #EDE6D8; padding: 32px 24px; text-align: center; }
+    .eico { width: 52px; height: 52px; border-radius: 50%; margin: 0 auto 16px; display: flex; align-items: center; justify-content: center; }
+    .etit { font-size: 20px; font-weight: 700; margin-bottom: 8px; }
+    .esub { font-size: 15px; color: #6A6058; line-height: 1.8; text-align: left; margin-bottom: 24px; }
+    .esub p { margin-bottom: 12px; }
+    .ediv { border: none; border-top: 1px solid #EDE6D8; margin: 0 0 16px; }
+    .ehint { font-size: 12px; color: #9A8060; margin-bottom: 10px; }
+    .rbtn { background: transparent; border: 1px solid #D9D3C8; border-radius: 12px; padding: 12px 24px; font-size: 15px; cursor: pointer; color: #2C2A24; }
+  </style>
+</head>
+<body>
 <div id="gw">
+  <a class="back-btn" href="../index.html">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M10 3L5 8l5 5" stroke="#9A8060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    처음으로
+  </a>
+  <div class="hdr">
+    <div class="hdr-t">온유</div>
+    <div class="hdr-s">성적표를 숨긴 동생 지훈</div>
+    <div class="hdr-l"></div>
+  </div>
   <div class="sbar" id="sbar"></div>
   <div id="main"></div>
 </div>
@@ -293,8 +342,7 @@ function render() {
   if (!node) return;
   const main = document.getElementById('main');
   if (node.isEnd) {
-    const sbar = document.getElementById('sbar');
-    if (sbar) sbar.innerHTML = '';
+    document.getElementById('sbar').innerHTML = '';
     renderEnd(node, main);
     return;
   }
@@ -333,27 +381,30 @@ function renderEnd(node, main) {
     </div>` : '';
   main.innerHTML = dlgCard + `
     <div class="ewrap">
-      <div class="eico" style="background:${isGood ? '#EEF7F2' : 'var(--color-background-secondary)'};">
+      <div class="eico" style="background:${isGood ? '#EEF7F2' : '#F0ECE4'};">
         ${isGood
-          ? `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z" fill="#5A9E80"/></svg>`
-          : `<svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="var(--color-border-secondary)" stroke-width="1.5"/><path d="M12 7v5.5M12 15.5v1" stroke="var(--color-text-secondary)" stroke-width="1.5" stroke-linecap="round"/></svg>`
+          ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26Z" fill="#5A9E80"/></svg>`
+          : `<svg width="24" height="24" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#B0A090" stroke-width="1.5"/><path d="M12 7v5.5M12 15.5v1" stroke="#B0A090" stroke-width="1.5" stroke-linecap="round"/></svg>`
         }
       </div>
-      <div class="etit" style="color:${isGood ? '#3A7A5A' : 'var(--color-text-primary)'};">${node.endTitle}</div>
-      <div style="width:32px;height:1px;background:${isGood ? '#5A9E80' : 'var(--color-border-secondary)'};margin:10px auto 16px;"></div>
+      <div class="etit" style="color:${isGood ? '#3A7A5A' : '#4A4038'};">${node.endTitle}</div>
+      <div style="width:32px;height:1px;background:${isGood ? '#5A9E80' : '#C8BEB0'};margin:10px auto 16px;"></div>
       <div class="esub">${msgLines}</div>
       <hr class="ediv">
-      <div style="font-size:12px;color:var(--color-text-tertiary);margin-bottom:10px;">처음부터 다시 해볼까요?</div>
-      <button class="abtn sec" style="width:auto;padding:10px 24px;" onclick="restart()">다시 시작하기</button>
+      <div class="ehint">처음부터 다시 해볼까요?</div>
+      <button class="rbtn" onclick="restart()">다시 시작하기</button>
     </div>
   `;
 }
 
 function restart() {
   cur = 'start'; maxStage = 0;
-  document.getElementById('gw').innerHTML = `<div class="sbar" id="sbar"></div><div id="main"></div>`;
+  document.getElementById('sbar').innerHTML = '';
+  document.getElementById('main').innerHTML = '';
   render();
 }
 
 render();
 </script>
+</body>
+</html>
