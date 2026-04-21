@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>하은이의 비밀 — 방탈출</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#F5EDD8;--cream2:#EDE6D6;--parchment:#FFF9F0;--gold:#C9A84C;--gold-light:#E8C96A;--brown:#3D2B1F;--brown-mid:#7B5230;--brown-light:#A0714F;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;height:100dvh;overflow:hidden;background:#1a0e04;}
+body{font-family:'Noto Sans KR',sans-serif;display:flex;justify-content:center;}
+#game{width:100%;height:100vh;height:100dvh;position:relative;overflow:hidden;background:var(--cream);}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;background:var(--cream);opacity:0;transition:opacity .3s ease;overflow:hidden;}
+.screen.active{display:flex;}
+.screen.visible{opacity:1;}
+.hdr{background:var(--brown);color:var(--gold);padding:13px 18px;font-family:'Noto Serif KR',serif;font-size:14px;letter-spacing:.5px;display:flex;align-items:center;gap:10px;flex-shrink:0;z-index:10;}
+.back-btn{background:none;border:none;color:var(--gold);font-size:22px;cursor:pointer;padding:0 6px 0 0;line-height:1;}
+.body{padding:18px 18px 80px;flex:1;overflow-y:auto;}
+.mono{background:rgba(61,43,31,.07);border-left:3px solid var(--gold);padding:13px 15px;font-style:italic;color:#5a3e2b;font-size:13.5px;line-height:1.9;border-radius:0 8px 8px 0;margin-bottom:16px;}
+.card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 2px 14px rgba(61,43,31,.10);margin-bottom:15px;}
+.btn{background:var(--brown);color:var(--cream);border:none;border-radius:10px;padding:13px 20px;font-family:'Noto Serif KR',serif;font-size:14px;cursor:pointer;width:100%;transition:background .2s,transform .1s;display:block;text-align:center;margin-top:8px;}
+.btn:active{transform:scale(.97);background:#2e1f12;}
+.btn-gold{background:var(--gold);color:var(--brown);}
+.btn-gold:active{background:var(--gold-light);}
+.room-item{background:#fff;border-radius:14px;padding:16px 18px;margin-bottom:13px;display:flex;align-items:center;gap:15px;box-shadow:0 2px 10px rgba(61,43,31,.09);cursor:pointer;transition:transform .15s,border-color .3s;border:2px solid transparent;}
+.room-item:active{transform:scale(.97);}
+.room-item.solved{border-color:var(--gold);background:var(--parchment);}
+.room-item.locked{opacity:.4;pointer-events:none;filter:grayscale(.3);}
+.ri-icon{font-size:36px;flex-shrink:0;}
+.ri-text h3{font-family:'Noto Serif KR',serif;color:var(--brown);font-size:15px;margin-bottom:3px;}
+.ri-text p{font-size:12px;color:var(--brown-mid);}
+.chk{color:var(--gold);font-size:22px;margin-left:auto;display:none;}
+.pw-row{display:flex;gap:7px;justify-content:center;margin-bottom:10px;}
+.pw-digit{width:44px;height:52px;border:2px solid var(--gold);border-radius:10px;text-align:center;font-size:22px;font-family:'Noto Serif KR',serif;background:var(--parchment);color:var(--brown);outline:none;transition:border-color .2s;}
+.pw-digit:focus{border-color:var(--brown);}
+.pw-actions{display:flex;gap:8px;}
+.pw-actions .btn{flex:1;margin-top:0;}
+.err-msg{color:#c0392b;font-size:12px;text-align:center;margin-top:8px;display:none;}
+/* ── DIARY SWIPE ── */
+#screen-diary{overflow:hidden;}
+.diary-viewport{flex:1;overflow:hidden;position:relative;}
+.diary-track{display:flex;height:100%;transition:transform .38s cubic-bezier(.4,0,.2,1);will-change:transform;}
+/* ── E-BOOK DIARY PAGES ── */
+.diary-page{
+  min-width:100%; height:100%; flex-shrink:0;
+  display:flex; align-items:center; justify-content:center;
+  overflow:hidden;
+  background: #f0ece2;
+  position:relative;
+}
+/* Cover page (page 0) */
+.dp-cover{
+  display:flex; flex-direction:column; align-items:center;
+  justify-content:center; text-align:center; padding:30px 28px;
+}
+/* Notebook card — lined paper look */
+.dp-notebook{
+  width: 88%; max-width: 340px;
+  background: #fff;
+  border-radius: 6px;
+  box-shadow: 3px 4px 18px rgba(61,43,31,.18), -1px -1px 0 #e0d8c8;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+/* Colour tab at top */
+.dp-tab{height:8px; width:100%;}
+/* Inner lined area */
+.dp-lined{
+  padding: 16px 20px 20px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent,
+    transparent 27px,
+    #dde8f0 27px,
+    #dde8f0 28px
+  );
+  background-size: 100% 28px;
+  background-position: 0 36px;
+  min-height: 260px;
+  position: relative;
+}
+/* Red left margin line */
+.dp-lined::before{
+  content:''; position:absolute; left:44px; top:0; bottom:0;
+  width:1px; background:rgba(220,100,100,.35);
+}
+/* Date row */
+.dp-date-row{
+  display:flex; align-items:center; gap:6px;
+  margin-bottom:14px; padding-left:4px;
+}
+.dp-month{font-size:13px; color:var(--brown-mid); font-weight:600; font-family:'Noto Serif KR',serif;}
+.dp-day-badge{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:28px; height:28px; border:2.5px solid red; border-radius:50%;
+  font-size:14px; font-weight:700; color:red; line-height:1;
+  font-family:'Noto Serif KR',serif;
+}
+/* Main diary text */
+.dp-text{
+  font-size:12.5px; line-height:28px; color:var(--brown);
+  text-align:center; font-family:'Noto Sans KR',sans-serif;
+  word-break:keep-all;
+}
+/* Coloured highlight spans */
+.hg{color:#2E7D32;font-weight:700;}
+.ho{color:#E65100;font-weight:700;}
+.hn{color:#1A237E;font-weight:700;}
+.hs{color:#0277BD;font-weight:700;}
+.hr{color:#B71C1C;font-weight:700;}
+.diary-nav{position:absolute;bottom:0;left:0;right:0;background:rgba(61,43,31,.92);padding:12px 18px;display:flex;align-items:center;justify-content:space-between;z-index:5;}
+.d-arrow{background:none;border:none;color:var(--gold);font-size:26px;cursor:pointer;padding:2px 10px;line-height:1;}
+.d-arrow:disabled{opacity:.22;}
+.d-dots{display:flex;gap:6px;align-items:center;}
+.d-dot{width:7px;height:7px;border-radius:50%;background:rgba(201,168,76,.3);transition:background .2s,transform .2s;}
+.d-dot.cur{background:var(--gold);transform:scale(1.3);}
+/* ── SORT ── */
+.tiles-wrap{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:16px;}
+.ctile{width:58px;height:58px;border-radius:12px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(0,0,0,.2);transition:transform .15s;border:3px solid transparent;line-height:1.3;padding:4px;text-align:center;white-space:pre-line;}
+.ctile.selected{border-color:#fff;transform:scale(1.12);}
+.ctile.used{opacity:.28;pointer-events:none;}
+.slot-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.slot-box{flex:1;height:44px;border:2px dashed var(--gold);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;background:#fff;font-size:12px;color:var(--gold);}
+.slot-box.filled{border-style:solid;background:var(--parchment);font-size:11px;}
+.slot-box.filled{border-style:solid;background:var(--parchment);}
+.result-box{background:var(--brown);color:var(--gold);border-radius:12px;padding:14px;text-align:center;font-family:'Noto Serif KR',serif;font-size:22px;letter-spacing:6px;margin:12px 0;}
+/* ── MISC ── */
+.succ{text-align:center;padding:14px;background:#F0FFF0;border-radius:12px;border:1px solid #A5D6A7;margin-bottom:14px;}
+.bible-icons{display:flex;gap:12px;margin:12px 0;}
+.bicon{flex:1;background:var(--brown-mid);color:var(--cream);border-radius:12px;padding:14px 10px;text-align:center;cursor:pointer;transition:background .2s;}
+.bicon:active{background:var(--brown);}
+.bicon .bi-icon{font-size:26px;display:block;margin-bottom:4px;}
+.bicon span{font-size:12px;}
+.text-input{width:100%;padding:12px 14px;border:2px solid var(--gold);border-radius:10px;font-size:16px;background:var(--parchment);color:var(--brown);outline:none;margin-bottom:10px;text-align:center;font-family:'Noto Serif KR',serif;}
+.text-input:focus{border-color:var(--brown);}
+.cipher-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0;}
+.cc{background:var(--parchment);border:1px solid #E0D5C0;border-radius:8px;padding:8px;text-align:center;}
+.cc-char{font-size:18px;font-weight:700;color:var(--gold);}
+.cc-num{font-size:12px;color:var(--brown-mid);}
+.code-disp{background:var(--brown);color:var(--gold);border-radius:10px;padding:14px;text-align:center;font-family:monospace;font-size:19px;letter-spacing:4px;margin:12px 0;}
+.blank-field{border:none;border-bottom:3px solid var(--gold);background:transparent;font-family:'Noto Serif KR',serif;font-size:17px;color:var(--brown);outline:none;min-width:90px;padding:4px 6px;text-align:center;}
+.final-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.final-row span{font-size:14px;color:var(--brown);white-space:nowrap;}
+.bubble{background:#fff;border-radius:16px;padding:15px 18px;margin:10px 0;box-shadow:0 2px 8px rgba(61,43,31,.1);}
+.bubble-haeun{background:var(--parchment);border-left:3px solid var(--gold);}
+.bspkr{font-size:11px;font-weight:700;color:var(--brown-mid);margin-bottom:5px;}
+.btext{font-size:14px;line-height:1.85;color:var(--brown);}
+.attr-card{border-radius:10px;padding:12px 14px;margin-bottom:10px;border-left:4px solid;cursor:pointer;transition:box-shadow .2s;}
+.attr-card:active{box-shadow:0 0 0 2px var(--gold);}
+.attr-detail{display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(61,43,31,.15);font-size:12.5px;line-height:1.85;color:var(--brown-mid);}
+.attr-detail.open{display:block;}
+.attr-toggle{font-size:11px;color:var(--gold);margin-top:4px;}
+.pb-wrap{display:flex;justify-content:center;margin:6px 0;}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;display:none;justify-content:center;align-items:flex-end;}
+.modal-bg.open{display:flex;}
+.modal-box{background:var(--cream);border-radius:22px 22px 0 0;padding:22px 20px 40px;width:100%;max-width:430px;max-height:80vh;overflow-y:auto;}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.modal-close{background:none;border:none;font-size:26px;cursor:pointer;color:var(--brown-mid);}
+.bv{margin-bottom:14px;}
+.bvnum{font-weight:700;color:var(--gold);font-size:12px;margin-bottom:3px;}
+.bvtext{font-size:13px;line-height:1.8;color:var(--brown);}
+
+#screen-intro{background:linear-gradient(180deg,#120900,#2a1a0a 60%,#3D2B1F);justify-content:center;align-items:center;padding:40px 28px;text-align:center;}
+</style>
+</head>
+<body>
+<div id="game">
+
+<!-- PASSWORD -->
+<div id="screen-password" class="screen" style="background:linear-gradient(180deg,#120900,#2a1a0a 60%,#3D2B1F);justify-content:center;align-items:center;padding:40px 28px;text-align:center;">
+  <div style="font-size:48px;margin-bottom:20px;">🔐</div>
+  <h1 style="font-family:'Noto Serif KR',serif;color:#F5EDD8;font-size:22px;margin-bottom:8px;">하은이의 비밀</h1>
+  <p style="color:var(--gold);font-size:12px;letter-spacing:3px;margin-bottom:32px;">비밀번호를 입력하세요</p>
+  <div style="background:rgba(245,237,216,.08);border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:24px;width:100%;max-width:320px;">
+    <input id="pw-input" type="password" placeholder="비밀번호"
+      style="width:100%;background:rgba(255,255,255,.07);border:2px solid var(--gold);border-radius:10px;padding:14px 16px;font-size:16px;color:#F5EDD8;text-align:center;letter-spacing:3px;outline:none;font-family:'Noto Sans KR',sans-serif;"
+      onkeydown="if(event.key==='Enter')checkPw()"
+    >
+    <div id="pw-err" style="color:#e74c3c;font-size:12px;margin-top:10px;display:none;">비밀번호가 틀렸습니다 🔒</div>
+    <button class="btn btn-gold" style="margin-top:16px;font-size:15px;padding:13px;" onclick="checkPw()">입장하기</button>
+  </div>
+</div>
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen">
+  <div style="font-size:52px;margin-bottom:20px;">✝️</div>
+  <h1 style="font-family:'Noto Serif KR',serif;color:#F5EDD8;font-size:24px;margin-bottom:8px;">하은이의 비밀</h1>
+  <p style="color:var(--gold);font-size:12px;letter-spacing:3px;margin-bottom:36px;">방탈출 게임</p>
+  <div style="background:rgba(245,237,216,.08);border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:24px;margin-bottom:36px;">
+    <p style="font-family:'Noto Serif KR',serif;color:#F5EDD8;font-size:14px;line-height:2.2;font-style:italic;">"언젠가부터 내 친구 '하은'이가 이상하다.<br>교회를 다닌다고 하고부터 뭔가 달라졌다.<br><br>내가 그렇게 하나님 같은건 없다고 말했는데<br>결국 하은이는 속아넘어갔다.<br><br>하지만 난 다르다. 내가 하나님이 없다는걸<br>밝혀내서 다시 하은이를 구해와야겠어."</p>
+  </div>
+  <button class="btn btn-gold" style="font-size:16px;padding:15px;" onclick="go('room')">🚪 교실로 들어가기</button>
+</div>
+
+<!-- ROOM -->
+<div id="screen-room" class="screen">
+  <div class="hdr">🏫 <span>방과 후 교실</span></div>
+  <div class="body">
+    <div class="mono">방과 후 텅 빈 교실. 하은이의 자리에 뭔가가 있다. 조심스럽게 살펴봐야겠어.</div>
+    <div id="ri-diary" class="room-item" onclick="go('diary')">
+      <div class="ri-icon">📔</div>
+      <div class="ri-text"><h3>하은이의 다이어리</h3><p>무언가 적혀있다. 살펴봐야겠어.</p></div>
+      <span id="chk-diary" class="chk">✓</span>
+    </div>
+    <div id="ri-notes" class="room-item locked" onclick="go('notes')">
+      <div class="ri-icon">📝</div>
+      <div class="ri-text"><h3>하은이의 노트</h3><p id="notes-status">🔒 다이어리를 먼저 풀어야 열립니다</p></div>
+      <span id="chk-notes" class="chk">✓</span>
+    </div>
+    <div id="ri-box" class="room-item locked" onclick="go('box')">
+      <div class="ri-icon">📦</div>
+      <div class="ri-text"><h3>잠긴 상자</h3><p id="box-status">🔒 노트를 먼저 풀어야 열립니다</p></div>
+    </div>
+  </div>
+</div>
+
+<!-- DIARY (SWIPEABLE) -->
+<div id="screen-diary" class="screen">
+  <div class="hdr">
+    <button class="back-btn" onclick="go('room')">←</button>
+    📔 하은이의 다이어리
+    <span id="d-page-label" style="margin-left:auto;font-size:12px;opacity:.7;"></span>
+  </div>
+  <div class="diary-viewport" id="d-viewport">
+    <div class="diary-track" id="d-track">
+
+      <!-- PAGE 0: Cover -->
+      <div class="diary-page">
+        <div class="dp-cover">
+          <div style="font-size:54px;margin-bottom:16px;">📔</div>
+          <h2 style="font-family:'Noto Serif KR',serif;color:var(--brown);font-size:20px;margin-bottom:14px;">하은이의 다이어리</h2>
+          <div style="background:#FFFDF5;border-radius:12px;padding:20px 24px;border:1px solid #E8D5A3;max-width:280px;text-align:center;">
+            <p style="font-family:'Noto Serif KR',serif;font-size:13.5px;line-height:2;color:var(--brown);font-style:italic;">"오늘부터 6일간 하나님이 창조하신 세상의 순서를 배운다고 한다.<br><br>매일 기억나는대로 복습해야겠다"</p>
+          </div>
+          <p style="font-size:12px;color:var(--brown-light);margin-top:22px;">← 밀어서 다음 페이지 →</p>
+        </div>
+      </div>
+
+      <!-- PAGE 1: 7/4 Green — Day 3 -->
+      <div class="diary-page">
+        <div class="dp-notebook">
+          <div class="dp-tab" style="background:#4CAF50;"></div>
+          <div class="dp-lined">
+            <div class="dp-date-row"><span class="dp-month">7월</span><div class="dp-day-badge">4</div><span class="dp-month">일</span></div>
+            <p class="dp-text">오늘 가장 기억나는 것은 하나님이<br>'<span class="hg">천하의 물이 한 곳으로 모여<br>마른 땅이 드러나라</span>'고 하셨고<br>그대로 되어 <span class="hg">땅과 바다로 나뉘어졌다</span>고 했어.<br><br>그리고 땅에 <span class="hg">식물과 채소,<br>열매를 맺는 나무</span>가 자라나라고 하셨지.<br>하나님의 사랑이 느껴지네^^</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 2: 7/5 Orange — Day 1 -->
+      <div class="diary-page">
+        <div class="dp-notebook">
+          <div class="dp-tab" style="background:#FF8C00;"></div>
+          <div class="dp-lined">
+            <div class="dp-date-row"><span class="dp-month">7월</span><div class="dp-day-badge" style="border-color:#FF8C00;color:#FF8C00;">5</div><span class="dp-month">일</span></div>
+            <p class="dp-text">오늘은 그게 기억난다!<br>하나님께서 '<span class="ho">빛이 있으라</span>'하시니<br>빛이 있었고<br><span class="ho">빛을 낮이라고 부르시고<br>어둠을 밤이라 부르셨지</span>.<br><br>말씀으로 빛과 어둠을 나누신<br>하나님은 참 놀라운 분이야!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 3: 7/6 Navy — Day 4 -->
+      <div class="diary-page">
+        <div class="dp-notebook">
+          <div class="dp-tab" style="background:#1A237E;"></div>
+          <div class="dp-lined">
+            <div class="dp-date-row"><span class="dp-month">7월</span><div class="dp-day-badge" style="border-color:#1A237E;color:#1A237E;">6</div><span class="dp-month">일</span></div>
+            <p class="dp-text">내가 가장 좋아하는 말씀이 생각난다!<br>하나님이 <span class="hn">해와 달과 별들,<br>이 큰 우주를 만드시고</span><br>계절과 날과 해를 나타내는<br>징조가 되게 하셨지!<br><br><span class="hn">하나는 낮을 주관,<br>하나는 밤을 주관</span>하게 하셨어~</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 4: 7/7 Sky — Day 5 -->
+      <div class="diary-page">
+        <div class="dp-notebook">
+          <div class="dp-tab" style="background:#0288D1;"></div>
+          <div class="dp-lined">
+            <div class="dp-date-row"><span class="dp-month">7월</span><div class="dp-day-badge" style="border-color:#0288D1;color:#0288D1;">7</div><span class="dp-month">일</span></div>
+            <p class="dp-text">하나님이<br>'<span class="hs">물에는 물고기와 다른 생물들이<br>가득해져라.<br>하늘에는 각종 새들이 가득해져라</span>'<br>라고 말씀하셨고<br>그대로 <span class="hs">모든 바다생물과<br>하늘의 새들을 만드셨다</span>!</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAGE 5: 7/8 Red — Day 2 -->
+      <div class="diary-page">
+        <div class="dp-notebook">
+          <div class="dp-tab" style="background:#C62828;"></div>
+          <div class="dp-lined">
+            <div class="dp-date-row"><span class="dp-month">7월</span><div class="dp-day-badge" style="border-color:#C62828;color:#C62828;">8</div><span class="dp-month">일</span></div>
+            <p class="dp-text">하나님이<br>'<span class="hr">물 가운데 공간이 있어<br>물과 물이 나뉘어져라</span>'라고 하시고<br><span class="hr">땅의 물과 하늘의 물을 나누셔서<br>하늘(궁창)을 만드신</span> 사건이 생각난다.<br><br>지금은 없는 궁창이라니..<br>참 놀라운 신비야!</p>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- PAGE 6: SORT PUZZLE -->
+      <div class="diary-page" style="align-items:flex-start;overflow-y:auto;padding:14px 16px 90px;background:var(--cream);">
+        <div class="card" id="d-sort-card">
+          <div class="tiles-wrap" id="d-tiles"></div>
+          <div id="d-slots"></div>
+          <button class="btn" style="margin-top:10px;" onclick="checkDiarySort()">✓ 확인하기</button>
+          <button class="btn btn-gold" style="margin-top:8px;" onclick="resetSortTiles()">↺ 처음부터 다시</button>
+          <p class="err-msg" id="d-sort-err">순서가 맞지 않아요!</p>
+        </div>
+      </div>
+
+      <!-- PAGE 7: REVEALED (hidden until unlock) -->
+      <div class="diary-page" id="d-page7" style="display:none;flex-direction:column;gap:16px;">
+        <div class="dp-notebook" style="width:88%;max-width:340px;">
+          <div class="dp-tab" style="background:var(--gold);"></div>
+          <div class="dp-lined">
+            <div class="dp-date-row"><span class="dp-month">7월</span><div class="dp-day-badge" style="border-color:var(--gold);color:var(--gold);">9</div><span class="dp-month">일</span></div>
+            <p class="dp-text">이제 마지막이네!<br>드디어 <strong>땅의 짐승들을 말씀으로 만드셨지</strong>.<br>땅의 짐승과 가축들,<br>작은 동물들, 들짐승들까지!<br><br>그리고 <strong>하나님의 형상으로<br>창조된 우리 사람까지!!</strong><br>생기를 불어넣어 생령이 되게 하신 하나님.<br>감사합니다!</p>
+          </div>
+        </div>
+        <div style="width:88%;max-width:340px;background:rgba(61,43,31,.85);border-radius:14px;padding:18px 20px;border-left:4px solid var(--gold);">
+          <p style="font-family:'Noto Serif KR',serif;font-size:15px;line-height:2;color:#F5EDD8;font-style:italic;">하나님이 세상을 창조하셨다고?<br>그것도 말씀으로..<br>우리가 하나님의 형상이라니?<br>성경은 그냥 신화잖아...<br><br>마침 하은이가 필기한 노트가 있네!</p>
+          <button class="btn btn-gold" style="font-size:13px;padding:11px;margin-top:12px;" onclick="go('room')">← 교실로 돌아가기</button>
+        </div>
+      </div>
+
+      </div><!-- /track -->
+  </div><!-- /viewport -->
+  <div class="diary-nav">
+    <button class="d-arrow" id="d-prev" onclick="diaryMove(-1)" disabled>‹</button>
+    <div class="d-dots" id="d-dots"></div>
+    <button class="d-arrow" id="d-next" onclick="diaryMove(1)">›</button>
+  </div>
+</div>
+
+<!-- NOTES -->
+<div id="screen-notes" class="screen">
+  <div class="hdr"><button class="back-btn" onclick="go('room')">←</button>📝 하은이의 노트</div>
+  <div class="body">
+    <div class="mono">노트가 있다. 성경 구절이 적혀있다. 성경을 열어서 확인해봐야겠어.</div>
+
+    <div class="card">
+      <h3 style="font-family:'Noto Serif KR',serif;color:var(--gold);font-size:16px;margin-bottom:12px;">하나님의 성품 — '거룩하신 하나님'</h3>
+      <p style="font-weight:700;margin-bottom:12px;font-size:14px;">거룩 = 구별되다!!</p>
+      <div style="background:#FFF3CD;border-radius:8px;padding:12px;margin-bottom:16px;border-left:3px solid #FF9800;">
+        <p style="font-size:12.5px;color:#7B5230;font-style:italic;line-height:1.7;">* 당시 수메르 신화에서 신은 자신이 일하기 싫어서 자기 대신 일할 사람을 만들었다. 그러나 하나님은 오히려 사랑하고, 함께 하고 싶어서 사람을 창조하셨다!</p>
+      </div>
+      <div style="margin-bottom:16px;">
+        <p style="font-size:13.5px;line-height:2;color:var(--brown);margin-bottom:6px;">"이 백성은 내가 나를 위하여 지었나니 나의 찬송을 부르게 하려 함이니라"</p>
+        <p style="font-size:12px;color:var(--brown-mid);margin-bottom:8px;">여기서 찬송은 마음으로부터 우러나오는 참다운 고백이다!</p>
+        <div style="background:var(--parchment);border-radius:8px;padding:8px 12px;border:1px dashed var(--gold);display:inline-block;">
+          <p style="font-size:13px;color:var(--gold);">(사 4<span style="display:inline-block;width:16px;height:13px;border-bottom:2px solid var(--gold);background:#FFF8E7;border-radius:2px;vertical-align:bottom;margin:0 1px;"></span>:2<span style="display:inline-block;width:16px;height:13px;border-bottom:2px solid var(--gold);background:#FFF8E7;border-radius:2px;vertical-align:bottom;margin:0 1px;"></span>)</p>
+        </div>
+      </div>
+      <div style="background:#E8F4FD;border-radius:10px;padding:14px;border-left:3px solid #0288D1;">
+        <p style="font-size:13px;line-height:1.9;color:var(--brown);margin-bottom:10px;">"나는 여호와 너희의 하나님이라 내가 거룩하니 너희도 몸을 구별하여 거룩하게 하고 땅에 기는 길짐승으로 말미암아 스스로 더럽히지 말라 나는 너희의 하나님이 되려고 너희를 애굽 땅에서 인도하여 낸 여호와라 내가 거룩하니 너희도 거룩할지어다"</p>
+        <div style="background:#fff;border-radius:6px;padding:6px 10px;display:inline-block;">
+          <p style="font-size:12px;color:#0277BD;">(레위기 11:<span style="display:inline-block;width:16px;height:13px;border-bottom:2px solid #0277BD;background:#E8F4FD;border-radius:2px;vertical-align:bottom;margin:0 1px;"></span>4-4<span style="display:inline-block;width:16px;height:13px;border-bottom:2px solid #0277BD;background:#E8F4FD;border-radius:2px;vertical-align:bottom;margin:0 1px;"></span>)</p>
+        </div>
+      </div>
+      <p style="font-size:13px;line-height:1.8;margin-top:12px;color:var(--brown);">하나님은 죄가 없으신 거룩하신 분이다! 죄 없으신 하나님을 따라 우리도 거룩한 삶을 살아야 한다!</p>
+    </div>
+
+    <div class="bible-icons">
+      <div class="bicon" onclick="openBible('isaiah')"><span class="bi-icon">📚</span><span>이사야 43장</span></div>
+      <div class="bicon" onclick="openBible('leviticus')"><span class="bi-icon">📖</span><span>레위기 11장</span></div>
+    </div>
+
+    <div class="card" id="n-lock">
+      <h3 style="font-family:'Noto Serif KR',serif;color:var(--brown);margin-bottom:6px;">🔒 비밀번호 입력 (4자리)</h3>
+      <div class="pw-row">
+        <input class="pw-digit" type="number" id="n1" oninput="this.value=this.value.slice(0,1);atab(this,'n2')">
+        <input class="pw-digit" type="number" id="n2" oninput="this.value=this.value.slice(0,1);atab(this,'n3')">
+        <input class="pw-digit" type="number" id="n3" oninput="this.value=this.value.slice(0,1);atab(this,'n4')">
+        <input class="pw-digit" type="number" id="n4" oninput="this.value=this.value.slice(0,1)">
+      </div>
+      <div class="pw-actions">
+        <button class="btn btn-gold" onclick="resetPW(['n1','n2','n3','n4'])">↺ 초기화</button>
+        <button class="btn" onclick="checkNotesPW()">확인</button>
+      </div>
+      <p class="err-msg" id="n-err">틀렸습니다. 성경을 다시 확인해보세요!</p>
+    </div>
+
+    <div id="n-success" style="display:none;">
+      <div class="mono">거룩하신 하나님... 생각할수록 이상한데. 잠긴 상자가 있었는데 이걸로 열 수 있을 것 같아.</div>
+      <button class="btn btn-gold" onclick="go('room')">← 교실로 돌아가기</button>
+    </div>
+  </div>
+</div>
+
+<!-- BOX -->
+<div id="screen-box" class="screen">
+  <div class="hdr"><button class="back-btn" onclick="go('room')">←</button>📦 잠긴 상자</div>
+  <div class="body">
+    <div class="mono">상자를 열었다! 안에 쪽지가 두 개 있다.</div>
+    <div class="card" style="background:var(--parchment);border:1px dashed var(--gold);">
+      <p style="font-size:11px;color:var(--gold);margin-bottom:8px;">📜 쪽지 1</p>
+      <p style="font-style:italic;font-size:14px;line-height:1.9;color:var(--brown);">하나님이 거룩하다? 다른 신이랑은 구별되는 분이라고? 죄가 없으시다고? 모르겠다. 이건 뭐지? 하은이가 만든건가?</p>
+    </div>
+    <div class="card" style="background:var(--parchment);border:1px dashed var(--gold);">
+      <p style="font-size:11px;color:var(--gold);margin-bottom:8px;">📜 쪽지 2</p>
+      <p style="font-size:13px;color:var(--brown-mid);margin-bottom:14px;">동그란 판에 핀이 꽂혀있고 빨간 실이 있다.</p>
+      <button class="btn btn-gold" onclick="go('pinboard')">🔴 핀보드 퍼즐 풀기</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- PINBOARD -->
+<div id="screen-pinboard" class="screen">
+  <div class="hdr"><button class="back-btn" onclick="go('box')">←</button>🔴 핀보드 퍼즐</div>
+  <div class="body">
+    
+    <div id="pb-progress" style="text-align:center;font-size:13px;color:var(--brown-mid);margin-bottom:6px;">&nbsp;</div>
+    <div class="pb-wrap"><svg id="pb-svg" width="300" height="300" viewBox="0 0 300 300"></svg></div>
+    
+    <button class="btn btn-gold" style="width:auto;display:inline-block;padding:9px 18px;font-size:13px;margin-bottom:14px;" onclick="resetPinboard()">↺ 핀보드 초기화</button>
+    <div id="pb-answer-box" class="card" style="display:none;">
+
+      <input type="text" class="text-input" id="pb-input" placeholder="정답을 입력하세요" autocapitalize="none" autocomplete="off">
+      <div class="pw-actions">
+        <button class="btn btn-gold" onclick="document.getElementById('pb-input').value=''">↺ 지우기</button>
+        <button class="btn" onclick="checkPB()">확인</button>
+      </div>
+      <p class="err-msg" id="pb-err">틀렸습니다. 다시 확인해보세요!</p>
+    </div>
+    <div id="pb-success" class="card" style="display:none;">
+      <div class="succ" style="text-align:left;">
+        <div style="text-align:center;font-size:30px;margin-bottom:10px;">✨</div>
+        
+<p style="font-family:'Noto Serif KR',serif;font-size:13px;color:var(--gold);font-weight:700;margin-bottom:10px;">시편 139편 1-12절</p>
+<p style="font-size:13px;line-height:1.95;color:var(--brown);">
+<strong>1</strong> 여호와여 주께서 나를 살펴 보셨으므로 나를 아시나이다<br>
+<strong>2</strong> 주께서 내가 앉고 일어섬을 아시고 멀리서도 나의 생각을 밝히 아시오며<br>
+<strong>3</strong> 나의 모든 길과 내가 눕는 것을 살펴 보셨으므로 나의 모든 행위를 익히 아시오니<br>
+<strong>4</strong> 여호와여 내 혀의 말을 알지 못하시는 것이 하나도 없으시니이다<br>
+<strong>5</strong> 주께서 나의 앞뒤를 둘러싸시고 내게 안수하셨나이다<br>
+<strong>6</strong> 이 지식이 내게 너무 기이하니 높아서 내가 능히 미치지 못하나이다<br>
+<strong>7</strong> 내가 주의 영을 떠나 어디로 가며 주의 앞에서 어디로 피하리이까<br>
+<strong>8</strong> 내가 하늘에 올라갈지라도 거기 계시며 스올에 내 자리를 펼지라도 거기 계시니이다<br>
+<strong>9</strong> 내가 새벽 날개를 치며 바다 끝에 가서 거할지라도<br>
+<strong>10</strong> 거기서도 주의 손이 나를 인도하시며 주의 오른손이 나를 붙드시리이다<br>
+<strong>11</strong> 내가 혹시 말하기를 흑암이 반드시 나를 덮고 나를 두른 빛은 밤이 되리라 할지라도<br>
+<strong>12</strong> 주에게서는 흑암이 숨기지 못하며 밤이 낮과 같이 비추이나니 주에게는 흑암과 빛이 같음이니이다
+</p>
+      </div>
+      <div class="mono" style="margin-top:12px;font-size:13px;">하나님이 나를 이렇게 세밀하게 아신다고?<br>이게 진짜라면... 정말 놀라운 분이시네.</div>
+      <button class="btn btn-gold" onclick="go('cipher')">다음 쪽지 확인 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- CIPHER -->
+<div id="screen-cipher" class="screen">
+  <div class="hdr"><button class="back-btn" onclick="go('pinboard')">←</button>🔐 암호 쪽지</div>
+  <div class="body">
+    
+    <div class="card">
+      <h3 style="font-family:'Noto Serif KR',serif;color:var(--brown);margin-bottom:10px;">📜 암호 쪽지</h3>
+      <div class="code-disp">9 9 2 9 6 9 9 2 2 0 8</div>
+      
+    </div>
+    <div class="card">
+      <h3 style="font-family:'Noto Serif KR',serif;color:var(--brown);margin-bottom:12px;">🗝️ 해독표</h3>
+      <p style="font-size:12px;color:var(--brown-mid);margin-bottom:8px;">자음</p>
+      <div class="cipher-grid">
+        <div class="cc"><div class="cc-char">ㄱ</div><div class="cc-num">= 1</div></div>
+        <div class="cc"><div class="cc-char">ㄴ</div><div class="cc-num">= 2</div></div>
+        <div class="cc"><div class="cc-char">ㄷ</div><div class="cc-num">= 0</div></div>
+        <div class="cc"><div class="cc-char">ㅁ</div><div class="cc-num">= 3</div></div>
+        <div class="cc"><div class="cc-char">ㅅ</div><div class="cc-num">= 6</div></div>
+        <div class="cc"><div class="cc-char">ㅇ</div><div class="cc-num">= 8</div></div>
+        <div class="cc"><div class="cc-char">ㅈ</div><div class="cc-num">= 9</div></div>
+        <div class="cc"><div class="cc-char">ㅍ</div><div class="cc-num">= 5</div></div>
+        <div class="cc"><div class="cc-char">ㅎ</div><div class="cc-num">= 7</div></div>
+      </div>
+      <p style="font-size:12px;color:var(--brown-mid);margin:10px 0 8px;">모음</p>
+      <div class="cipher-grid">
+        <div class="cc"><div class="cc-char">ㅏ</div><div class="cc-num">= 1</div></div>
+        <div class="cc"><div class="cc-char">ㅑ</div><div class="cc-num">= 2</div></div>
+        <div class="cc"><div class="cc-char">ㅓ</div><div class="cc-num">= 9</div></div>
+        <div class="cc"><div class="cc-char">ㅜ</div><div class="cc-num">= 4</div></div>
+        <div class="cc"><div class="cc-char">ㅡ</div><div class="cc-num">= 0</div></div>
+        <div class="cc"><div class="cc-char">ㅣ</div><div class="cc-num">= 6</div></div>
+        <div class="cc"><div class="cc-char">ㅢ</div><div class="cc-num">= 7</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <h3 style="font-family:'Noto Serif KR',serif;color:var(--brown);margin-bottom:10px;">✏️ 해독 결과 입력</h3>
+      <input type="text" class="text-input" id="ci-input" placeholder="해독된 한국어 단어">
+      <div class="pw-actions">
+        <button class="btn btn-gold" onclick="document.getElementById('ci-input').value=''">↺ 지우기</button>
+        <button class="btn" onclick="checkCipher()">확인</button>
+      </div>
+      <p class="err-msg" id="ci-err">틀렸습니다. 해독표를 다시 확인해보세요!</p>
+    </div>
+    <div id="ci-success" class="card" style="display:none;">
+      <div class="succ">
+        <div style="font-size:34px;margin-bottom:8px;">⭐</div>
+        <p style="font-family:'Noto Serif KR',serif;font-size:16px;font-weight:700;margin-bottom:4px;">전지전능!</p>
+        <p style="font-size:13px;color:var(--brown-mid);">모든 것을 아시고 모든 것을 하실 수 있는 하나님이구나.</p>
+      </div>
+      <button class="btn btn-gold" onclick="go('final')">마지막 문으로 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- FINAL -->
+<div id="screen-final" class="screen">
+  <div class="hdr"><button class="back-btn" onclick="go('cipher')">←</button>🚪 마지막 문</div>
+  <div class="body">
+    <div class="mono" style="font-size:14px;line-height:2.3;">하나님이 <span style="border-bottom:2px solid var(--gold);padding:0 8px;color:var(--gold);">___</span>이시고, <span style="border-bottom:2px solid var(--gold);padding:0 8px;color:var(--gold);">___</span>하시며, <span style="border-bottom:2px solid var(--gold);padding:0 8px;color:var(--gold);">___</span>하시다고?? 잘 모르겠다..</div>
+    <div class="card">
+      <h3 style="font-family:'Noto Serif KR',serif;color:var(--brown);margin-bottom:16px;">🔑 하나님의 세 가지 속성</h3>
+      <p style="font-size:12px;color:var(--brown-mid);margin-bottom:6px;">① 다이어리 — 세상을 만드신 분이시다</p>
+      <div class="final-row"><span>하나님은</span><input type="text" class="blank-field" id="f1" placeholder="???"><span>이시다</span></div>
+      <p style="font-size:12px;color:var(--brown-mid);margin-bottom:6px;">② 노트 — 죄 없이 구별되신 하나님</p>
+      <div class="final-row"><span>하나님은</span><input type="text" class="blank-field" id="f2" placeholder="??"><span>하시다</span></div>
+      <p style="font-size:12px;color:var(--brown-mid);margin-bottom:6px;">③ 암호 — 모든 것을 아시고 행하시는 하나님</p>
+      <div class="final-row"><span>하나님은</span><input type="text" class="blank-field" id="f3" placeholder="????"><span>하시다</span></div>
+      <div class="pw-actions" style="margin-top:10px;">
+        <button class="btn btn-gold" onclick="['f1','f2','f3'].forEach(id=>document.getElementById(id).value='')">↺ 초기화</button>
+        <button class="btn" onclick="checkFinal()">🚪 문 열기</button>
+      </div>
+      <p class="err-msg" id="f-err">다시 한번 생각해보세요!</p>
+    </div>
+  </div>
+</div>
+
+<!-- ENDING -->
+<div id="screen-ending" class="screen" style="background:linear-gradient(180deg,var(--cream),var(--cream2));">
+  <div class="body" style="padding-top:40px;">
+    <div style="text-align:center;margin-bottom:28px;">
+      <div style="font-size:52px;margin-bottom:12px;">🚪</div>
+      <p style="font-size:14px;color:var(--gold);letter-spacing:3px;font-family:'Noto Serif KR',serif;">(드르륵)</p>
+    </div>
+    <p style="font-family:'Noto Serif KR',serif;font-size:15px;line-height:2.2;color:var(--brown);margin-bottom:20px;text-align:center;">문이 열렸다.<br>갑자기 열린 문에 주인공은 당황했다.<br>문을 열고 들어온 사람은 하은이였다.</p>
+    <div class="bubble"><div class="bspkr">예나 (주인공)</div><div class="btext">"하은아.. 그게 아니라.. 나는 ..."</div></div>
+    <div class="bubble bubble-haeun">
+      <div class="bspkr" style="color:var(--gold);">하은 💛</div>
+      <div class="btext">"예나야 너한테 부탁하고 싶은게 있었어. 내가 교회를 갔는데 너무 좋아. 나는 너도 같이 교회를 가보면 좋을 것 같아. 교회에 가서 하나님에 대해서 알게되면 너도 정말 좋아할거야. 어때? 교회에 같이 가지 않을래?"</div>
+    </div>
+    <div style="text-align:center;margin:36px 0 28px;">
+      <p style="font-family:'Noto Serif KR',serif;font-size:26px;color:var(--gold);letter-spacing:5px;margin-bottom:8px;">The End</p>
+      <p style="font-size:13px;color:var(--brown-mid);">✝️ 하나님을 찾는 여정이 시작되었습니다</p>
+    </div>
+    <div class="card" style="margin-bottom:20px;">
+      <h3 style="font-family:'Noto Serif KR',serif;text-align:center;margin-bottom:16px;">오늘 발견한 하나님의 세 가지 속성</h3>
+      <div class="attr-card" style="border-color:#4CAF50;background:#F1F8E9;" onclick="toggleAttr('a1')">
+        <p style="font-family:'Noto Serif KR',serif;font-size:17px;color:#2E7D32;font-weight:700;">창조주 <span class="attr-toggle">▾ 더 알아보기</span></p>
+        <p style="font-size:12px;color:var(--brown-mid);margin-top:3px;">말씀으로 세상을 창조하신 하나님</p>
+        <div class="attr-detail" id="a1">
+          하나님은 말씀 하나로 빛, 하늘, 땅, 바다, 식물, 해와 달과 별, 물고기와 새, 짐승, 그리고 사람을 창조하셨어요. 다른 신화 속 신들이 자기 편의를 위해 인간을 만든 것과 달리, 하나님은 <strong>사랑하고 함께하고 싶어서</strong> 우리를 지으셨어요.<br><br>
+          "이 백성은 내가 나를 위하여 지었나니 나의 찬송을 부르게 하려 함이니라" (사 43:21)<br><br>
+          우리는 우연히 생겨난 것이 아니라, 하나님의 목적과 사랑 안에서 창조된 존재입니다.
+        </div>
+      </div>
+      <div class="attr-card" style="border-color:#0288D1;background:#E1F5FE;" onclick="toggleAttr('a2')">
+        <p style="font-family:'Noto Serif KR',serif;font-size:17px;color:#01579B;font-weight:700;">거룩 <span class="attr-toggle">▾ 더 알아보기</span></p>
+        <p style="font-size:12px;color:var(--brown-mid);margin-top:3px;">죄 없이 구별되신 거룩하신 하나님</p>
+        <div class="attr-detail" id="a2">
+          거룩(קָדוֹשׁ, 카도쉬)은 '구별되다'는 뜻이에요. 하나님은 우리가 아는 그 어떤 신과도 다르게, 완전히 죄가 없으시고 순결하십니다.<br><br>
+          "내가 거룩하니 너희도 거룩할지어다" (레위기 11:45)<br><br>
+          거룩하신 하나님은 우리에게 단순히 규칙을 요구하시는 게 아니라, <strong>당신처럼 아름다운 삶을 살 수 있도록</strong> 초청하고 계세요. 죄에서 구별되어 하나님과 가까워지는 삶, 그것이 거룩한 삶입니다.
+        </div>
+      </div>
+      <div class="attr-card" style="border-color:var(--gold);background:var(--parchment);" onclick="toggleAttr('a3')">
+        <p style="font-family:'Noto Serif KR',serif;font-size:17px;color:var(--gold);font-weight:700;">전지전능 <span class="attr-toggle">▾ 더 알아보기</span></p>
+        <p style="font-size:12px;color:var(--brown-mid);margin-top:3px;">모든 것을 아시고 행하실 수 있는 하나님</p>
+        <div class="attr-detail" id="a3">
+          전지(全知)는 모든 것을 아신다는 뜻, 전능(全能)은 모든 것을 하실 수 있다는 뜻이에요.<br><br>
+          "여호와여 주께서 나를 살펴 보셨으므로 나를 아시나이다" (시편 139:1)<br><br>
+          하나님은 내가 언제 앉고 일어서는지, 내 마음속 생각까지도 다 아십니다. 이것이 무서운 게 아니라 <strong>놀라운 위로</strong>예요. 세상에서 나를 이렇게 완전히 알고도 사랑하시는 분이 계신다는 것이니까요.
+        </div>
+      </div>
+    </div>
+    <button class="btn" onclick="location.reload()">🔄 처음부터 다시 하기</button>
+  </div>
+</div>
+
+<!-- BIBLE MODAL -->
+<div id="bible-modal" class="modal-bg">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <h3 id="bm-title" style="font-size:15px;">📖 성경</h3>
+      <button class="modal-close" onclick="closeBible()">✕</button>
+    </div>
+    <div id="bm-content"></div>
+  </div>
+</div>
+
+</div>
+<script>
+/* ═══ STATE ═══ */
+const G={diaryDone:false,notesDone:false};
+
+/* ═══ NAV ═══ */
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>{s.classList.remove('active','visible');});
+  const sc=document.getElementById('screen-'+id);
+  sc.classList.add('active');
+  setTimeout(()=>sc.classList.add('visible'),10);
+  const b=sc.querySelector('.body');if(b)b.scrollTop=0;
+}
+function atab(el,nid){if(el.value.length>=1){const n=document.getElementById(nid);if(n)n.focus();}}
+function showErr(id,v){const e=document.getElementById(id);if(e)e.style.display=v?'block':'none';}
+function resetPW(ids){ids.forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});const f=document.getElementById(ids[0]);if(f)f.focus();}
+
+/* ═══ DIARY SWIPE ═══ */
+let dCur=0,dTotal=7,dUnlocked=false;
+let touchStartX=0;
+const track=document.getElementById('d-track');
+const viewport=document.getElementById('d-viewport');
+
+viewport.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;},{passive:true});
+viewport.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-touchStartX;
+  if(Math.abs(dx)>40){if(dx<0)diaryMove(1);else diaryMove(-1);}
+},{passive:true});
+
+function diaryMove(dir){
+  const nc=dCur+dir;
+  if(nc<0||nc>=dTotal)return;
+  dCur=nc;updateDiaryUI();
+}
+function updateDiaryUI(){
+  track.style.transform=`translateX(-${dCur*100}%)`;
+  document.getElementById('d-page-label').textContent=`${dCur+1} / ${dTotal}`;
+  document.getElementById('d-prev').disabled=(dCur===0);
+  document.getElementById('d-next').disabled=(dCur===dTotal-1);
+  const de=document.getElementById('d-dots');
+  de.innerHTML='';
+  for(let i=0;i<dTotal;i++){const d=document.createElement('div');d.className='d-dot'+(i===dCur?' cur':'');de.appendChild(d);}
+}
+
+/* ═══ SORT TILES ═══ */
+const PAGES=[
+  {id:'orange',date:'7/5',day:1,color:'#FF8C00',label:'주황\n7/5'},
+  {id:'red',date:'7/8',day:2,color:'#C62828',label:'빨강\n7/8'},
+  {id:'green',date:'7/4',day:3,color:'#4CAF50',label:'초록\n7/4'},
+  {id:'navy',date:'7/6',day:4,color:'#1A237E',label:'남색\n7/6'},
+  {id:'sky',date:'7/7',day:5,color:'#0288D1',label:'하늘\n7/7'},
+];
+let selTile=null,slots=[null,null,null,null,null];
+
+function initSortTiles(){
+  const sh=[...PAGES].sort(()=>Math.random()-.5);
+  const te=document.getElementById('d-tiles');te.innerHTML='';
+  sh.forEach(p=>{
+    const t=document.createElement('div');
+    t.className='ctile';t.id='tile-'+p.id;t.style.background=p.color;t.style.whiteSpace='pre-line';
+    t.textContent=p.label;t.onclick=()=>pickTile(p.id);
+    te.appendChild(t);
+  });
+  const se=document.getElementById('d-slots');se.innerHTML='';
+  [1,2,3,4,5].forEach((_,i)=>{
+    const row=document.createElement('div');row.className='slot-row';
+    row.innerHTML=`<div class="slot-box" id="slot-${i}" onclick="placeSlot(${i})">?</div>`;
+    se.appendChild(row);
+  });
+  slots=[null,null,null,null,null];selTile=null;
+}
+function pickTile(id){
+  const ei=slots.indexOf(id);
+  if(ei!==-1){slots[ei]=null;const sb=document.getElementById('slot-'+ei);sb.textContent='배치하기';sb.style.color='var(--gold)';sb.classList.remove('filled');document.getElementById('tile-'+id).classList.remove('used');}
+  if(selTile===id){selTile=null;document.getElementById('tile-'+id).classList.remove('selected');return;}
+  if(selTile)document.getElementById('tile-'+selTile)?.classList.remove('selected');
+  selTile=id;document.getElementById('tile-'+id).classList.add('selected');
+}
+function placeSlot(i){
+  // 슬롯에 타일이 있고 선택된 타일이 없을 때 → 슬롯에서 타일 제거
+  if(slots[i] && !selTile){
+    const prevId=slots[i];
+    slots[i]=null;
+    const sb=document.getElementById('slot-'+i);
+    sb.textContent='?';sb.style.color='var(--gold)';sb.classList.remove('filled');
+    document.getElementById('tile-'+prevId).classList.remove('used');
+    return;
+  }
+  if(!selTile)return;
+  if(slots[i])document.getElementById('tile-'+slots[i]).classList.remove('used');
+  slots[i]=selTile;
+  const p=PAGES.find(x=>x.id===selTile);
+  const sb=document.getElementById('slot-'+i);
+  sb.textContent=p.label.replace('\n',' ');sb.style.color=p.color;sb.classList.add('filled');
+  document.getElementById('tile-'+selTile).classList.remove('selected');
+  document.getElementById('tile-'+selTile).classList.add('used');
+  selTile=null;
+}
+function resetSortTiles(){
+  // 모든 슬롯 초기화, 타일 복원
+  slots=[null,null,null,null,null];
+  if(selTile){document.getElementById('tile-'+selTile)?.classList.remove('selected');selTile=null;}
+  PAGES.forEach(p=>{
+    const t=document.getElementById('tile-'+p.id);
+    if(t){t.classList.remove('used','selected');}
+  });
+  for(let i=0;i<5;i++){
+    const sb=document.getElementById('slot-'+i);
+    if(sb){sb.textContent='?';sb.style.color='var(--gold)';sb.classList.remove('filled');}
+  }
+  showErr('d-sort-err',false);
+}
+function checkDiarySort(){
+  if(slots.some(s=>s===null)){alert('모든 칸을 채워주세요!');return;}
+  const ok=slots.every((id,i)=>PAGES.find(p=>p.id===id).day===i+1);
+  if(ok){
+    // 정답! 바로 7/9 페이지 공개
+    G.diaryDone=true;
+    document.getElementById('d-sort-card').style.display='none';
+    document.getElementById('d-page7').style.display='flex';
+    dTotal=8;dCur=7;updateDiaryUI();
+    document.getElementById('ri-notes').classList.remove('locked');
+    document.getElementById('notes-status').textContent='성경 공부 내용이 적혀있다.';
+    document.getElementById('chk-diary').style.display='inline';
+    document.getElementById('ri-diary').classList.add('solved');
+  } else {showErr('d-sort-err',true);setTimeout(()=>showErr('d-sort-err',false),3000);}
+}
+
+/* ═══ NOTES ═══ */
+function checkNotesPW(){
+  const pw=['n1','n2','n3','n4'].map(id=>document.getElementById(id).value).join('');
+  if(pw==='3145'){
+    G.notesDone=true;
+    document.getElementById('n-lock').style.display='none';
+    document.getElementById('n-success').style.display='block';
+    document.getElementById('n-success').scrollIntoView({behavior:'smooth'});
+    // Unlock box
+    document.getElementById('ri-box').classList.remove('locked');
+    document.getElementById('box-status').textContent='두 단서를 모두 찾았으니 열 수 있다.';
+    document.getElementById('chk-notes').style.display='inline';
+    document.getElementById('ri-notes').classList.add('solved');
+  } else {showErr('n-err',true);setTimeout(()=>showErr('n-err',false),3000);}
+}
+
+/* ═══ BOX ═══ */
+function checkBoxPW(){
+  const p2=['b6','b7','b8','b9'].map(id=>document.getElementById(id).value).join('');
+  if(p2==='3145'){
+    const bo=document.getElementById('box-open');bo.style.display='block';bo.scrollIntoView({behavior:'smooth'});
+  } else {showErr('b-err',true);setTimeout(()=>showErr('b-err',false),3000);}
+}
+
+/* ═══ BIBLE ═══ */
+const BIBLE={
+  isaiah:{title:'이사야 43장',html:`
+<p style="font-size:13px;font-family:'Noto Serif KR',serif;color:var(--gold);margin-bottom:12px;font-weight:700;">이사야 43장</p>
+<div class="bv"><div class="bvnum">1</div><div class="bvtext">야곱아 너를 창조하신 여호와께서 지금 말씀하시느니라 이스라엘아 너를 지으신 이가 말씀하시느니라 너는 두려워하지 말라 내가 너를 구속하였고 내가 너를 지명하여 불렀나니 너는 내 것이라</div></div>
+<div class="bv"><div class="bvnum">2</div><div class="bvtext">네가 물 가운데로 지날 때에 내가 너와 함께 할 것이라 강을 건널 때에 물이 너를 침몰하지 못할 것이며 네가 불 가운데로 지날 때에 타지도 아니할 것이요 불꽃이 너를 사르지도 못하리니</div></div>
+<div class="bv"><div class="bvnum">3</div><div class="bvtext">나는 여호와 네 하나님이요 이스라엘의 거룩한 이요 네 구원자임이라 내가 애굽을 너의 속량물로, 구스와 스바를 너를 대신하여 주었노라</div></div>
+<div class="bv"><div class="bvnum">4</div><div class="bvtext">네가 내 눈에 보배롭고 존귀하며 내가 너를 사랑하였은즉 내가 네 대신 사람들을 내어 주며 백성들이 네 생명을 대신하리니</div></div>
+<div class="bv"><div class="bvnum">5</div><div class="bvtext">두려워하지 말라 내가 너와 함께 하여 네 자손을 동쪽에서부터 오게 하며 서쪽에서부터 너를 모을 것이며</div></div>
+<div class="bv"><div class="bvnum">6</div><div class="bvtext">내가 북쪽에게 이르기를 내놓으라 남쪽에게 이르기를 가두어 두지 말라 내 아들들을 먼 곳에서 이끌며 내 딸들을 땅 끝에서 오게 하며</div></div>
+<div class="bv"><div class="bvnum">7</div><div class="bvtext">내 이름으로 불려지는 모든 자 곧 내가 내 영광을 위하여 창조한 자를 오게 하라 그를 내가 지었고 그를 내가 만들었느니라</div></div>
+<div class="bv"><div class="bvnum">8</div><div class="bvtext">눈이 있어도 보지 못하고 귀가 있어도 듣지 못하는 백성을 이끌어 내라</div></div>
+<div class="bv"><div class="bvnum">9</div><div class="bvtext">열방이 모였으며 민족들이 회집하였도다 그들 중에 누가 이 일을 알리며 이전 일들을 우리에게 들려 줄 수 있느냐 그들이 증인을 세워서 자신들의 정당함을 나타내게 하고 듣는 사람들이 옳다 하게 할지어다</div></div>
+<div class="bv"><div class="bvnum">10</div><div class="bvtext">나 여호와가 말하노라 너희는 나의 증인, 나의 종으로 택함을 입었나니 이는 너희가 나를 알고 믿으며 내가 그인 줄 깨닫게 하려 함이라 나의 전에 지음을 받은 신이 없었느니라 나의 후에도 없으리라</div></div>
+<div class="bv"><div class="bvnum">11</div><div class="bvtext">나 곧 나는 여호와라 나 외에 구원자가 없느니라</div></div>
+<div class="bv"><div class="bvnum">12</div><div class="bvtext">내가 알려 구원하였으며 보였나니 너희 중에 다른 신이 없느니라 그러므로 너희는 나의 증인이요 나는 하나님이니라 여호와의 말씀이니라</div></div>
+<div class="bv"><div class="bvnum">13</div><div class="bvtext">과연 태초로부터 나는 그이니 내 손에서 건질 자가 없도다 내가 행하리니 누가 막으리요</div></div>
+<div class="bv"><div class="bvnum">14</div><div class="bvtext">너희의 구속자요 이스라엘의 거룩한 이인 여호와가 말하노라 너희를 위하여 내가 바벨론에 사람을 보내어 모든 갈대아 사람을 배에 실어 내리고 그들이 자랑하는 배에서 그들이 통곡하게 하리라</div></div>
+<div class="bv"><div class="bvnum">15</div><div class="bvtext">나는 여호와 너희의 거룩한 이요 이스라엘의 창조자요 너희의 왕이니라</div></div>
+<div class="bv"><div class="bvnum">16</div><div class="bvtext">나 여호와가 이같이 말하노라 바다 가운데에 길을, 큰 물 가운데에 지름길을 내고</div></div>
+<div class="bv"><div class="bvnum">17</div><div class="bvtext">병거와 말과 군대와 장사를 이끌어 내어 그들이 일시에 엎드러져 일어나지 못하고 소멸되어 등불 같이 꺼지게 한 이는 나니라</div></div>
+<div class="bv"><div class="bvnum">18</div><div class="bvtext">너희는 이전 일을 기억하지 말며 옛날 일을 생각하지 말라</div></div>
+<div class="bv"><div class="bvnum">19</div><div class="bvtext">보라 내가 새 일을 행하리니 이제 나타낼 것이라 너희가 그것을 알지 못하겠느냐 반드시 내가 광야에 길을 내며 사막에 강을 내리니</div></div>
+<div class="bv"><div class="bvnum">20</div><div class="bvtext">장차 들짐승 곧 들개와 타조도 나를 공경할 것은 내가 광야에 물들을, 사막에 강들을 내어 내 백성, 내가 택한 자에게 마시게 할 것임이라</div></div>
+<div class="bv"><div class="bvnum">21</div><div class="bvtext">이 백성은 내가 나를 위하여 지었나니 나의 찬송을 부르게 하려 함이니라</div></div>
+<div class="bv"><div class="bvnum">22</div><div class="bvtext">그러나 야곱아 너는 나를 부르지 아니하였으며 이스라엘아 너는 나를 번거롭게 여겼느니라</div></div>
+<div class="bv"><div class="bvnum">23</div><div class="bvtext">네 번제의 양을 내게로 가져오지 아니하였으며 네 제물로 나를 공경하지 아니하였느니라 내가 제물로 너를 수고롭게 하지 아니하였으며 유향으로 너를 괴롭게 하지 아니하였거늘</div></div>
+<div class="bv"><div class="bvnum">24</div><div class="bvtext">너는 나를 위하여 돈으로 향품을 사지 아니하였으며 네 제물의 기름으로 나를 만족하게 하지 아니하였느니라 오히려 네가 네 죄로 나를 수고롭게 하였고 네 허물로 나를 괴롭혔느니라</div></div>
+<div class="bv"><div class="bvnum">25</div><div class="bvtext">나 곧 나는 내 자신을 위하여 네 허물을 도말하는 이니라 네 죄를 기억하지 아니하리라</div></div>`},
+  leviticus:{title:'레위기 11장',html:`
+<p style="font-size:13px;font-family:'Noto Serif KR',serif;color:var(--gold);margin-bottom:12px;font-weight:700;">레위기 11장</p>
+<div class="bv"><div class="bvnum">1</div><div class="bvtext">여호와께서 모세와 아론에게 말씀하여 이르시되</div></div>
+<div class="bv"><div class="bvnum">2</div><div class="bvtext">이스라엘 자손에게 말하여 이르라 육지의 모든 짐승 중 너희가 먹을 만한 생물은 이것이니라</div></div>
+<div class="bv"><div class="bvnum">3</div><div class="bvtext">짐승 중 굽이 갈라져 쪽발이 되고 새김질하는 것은 너희가 먹되</div></div>
+<div class="bv"><div class="bvnum">4</div><div class="bvtext">새김질하는 것이나 굽이 갈라진 짐승 중에도 너희가 먹지 못할 것은 이것이니 약대는 새김질은 하되 굽이 갈라지지 아니하였으므로 너희에게 부정하고</div></div>
+<div class="bv"><div class="bvnum">5</div><div class="bvtext">사반도 새김질은 하되 굽이 갈라지지 아니하였으므로 너희에게 부정하고</div></div>
+<div class="bv"><div class="bvnum">6</div><div class="bvtext">토끼도 새김질은 하되 굽이 갈라지지 아니하였으므로 너희에게 부정하고</div></div>
+<div class="bv"><div class="bvnum">7</div><div class="bvtext">돼지는 굽이 갈라져 쪽발이로되 새김질을 못하므로 너희에게 부정하니</div></div>
+<div class="bv"><div class="bvnum">8</div><div class="bvtext">이러한 것의 고기를 너희는 먹지 말고 그 주검도 만지지 말라 이것들은 너희에게 부정하니라</div></div>
+<div class="bv"><div class="bvnum">9</div><div class="bvtext">물에 있는 모든 것 중에서 너희가 먹을 만한 것은 이것이니 강과 바다와 다른 물에 있는 것 중에서 지느러미와 비늘 있는 것은 너희가 먹되</div></div>
+<div class="bv"><div class="bvnum">10</div><div class="bvtext">강과 바다와 다른 물에서 움직이는 것과 물에서 사는 것에 지느러미와 비늘이 없는 것은 너희에게 가증한 것이라</div></div>
+<div class="bv"><div class="bvnum">11</div><div class="bvtext">이것들은 너희에게 가증한 것이니 너희는 그것들의 고기를 먹지 말고 그 주검을 가증히 여기라</div></div>
+<div class="bv"><div class="bvnum">12</div><div class="bvtext">수중 생물에 지느러미와 비늘 없는 것은 너희에게 다 가증하니라</div></div>
+<div class="bv"><div class="bvnum">13</div><div class="bvtext">새 중에 너희가 가증히 여길 것은 이것이라 이것들이 가증한즉 먹지 말지니 곧 독수리와 솔개와 물수리와</div></div>
+<div class="bv"><div class="bvnum">14</div><div class="bvtext">솔개 종류와 매 종류와</div></div>
+<div class="bv"><div class="bvnum">15</div><div class="bvtext">까마귀 종류와</div></div>
+<div class="bv"><div class="bvnum">16</div><div class="bvtext">타조와 타흐마스와 갈매기와 새매 종류와</div></div>
+<div class="bv"><div class="bvnum">17</div><div class="bvtext">올빼미와 가마우지와 부엉이와</div></div>
+<div class="bv"><div class="bvnum">18</div><div class="bvtext">흰 올빼미와 사다새와 너새와</div></div>
+<div class="bv"><div class="bvnum">19</div><div class="bvtext">학과 황새 종류와 오디새와 박쥐니라</div></div>
+<div class="bv"><div class="bvnum">20</div><div class="bvtext">날개 있고 네 발로 기어다니는 것은 너희에게 가증하되</div></div>
+<div class="bv"><div class="bvnum">41</div><div class="bvtext">땅에 기어다니는 모든 것은 가증한즉 먹지 못할지니</div></div>
+<div class="bv"><div class="bvnum">42</div><div class="bvtext">배로 밀어 다니는 것이나 네 발로 걷는 것이나 여러 발을 가진 것이나 땅에 기어다니는 모든 것은 너희가 먹지 말지니 이것들은 가증함이니라</div></div>
+<div class="bv"><div class="bvnum">43</div><div class="bvtext">너희는 기어다니는 것들로 말미암아 스스로 더럽히지 말며 그것들로 인해 더러운 자가 되지 말라</div></div>
+<div class="bv"><div class="bvnum">44</div><div class="bvtext">나는 여호와 너희의 하나님이라 내가 거룩하니 너희도 몸을 구별하여 거룩하게 하고 땅에 기는 길짐승으로 말미암아 스스로 더럽히지 말라</div></div>
+<div class="bv"><div class="bvnum">45</div><div class="bvtext">나는 너희의 하나님이 되려고 너희를 애굽 땅에서 인도하여 낸 여호와라 내가 거룩하니 너희도 거룩할지어다</div></div>
+<div class="bv"><div class="bvnum">46</div><div class="bvtext">이는 짐승과 새와 물에서 움직이는 모든 생물과 땅에 기어다니는 모든 것에 대한 규례니</div></div>
+<div class="bv"><div class="bvnum">47</div><div class="bvtext">부정하고 정한 것과 먹을 생물과 먹지 못할 생물을 분별한 것이니라</div></div>`}
+}
+function openBible(type){
+  document.getElementById('bm-title').textContent=BIBLE[type].title;
+  document.getElementById('bm-content').innerHTML=BIBLE[type].html;
+  document.getElementById('bible-modal').classList.add('open');
+}
+function closeBible(){document.getElementById('bible-modal').classList.remove('open');}
+document.getElementById('bible-modal').addEventListener('click',function(e){if(e.target===this)closeBible();});
+
+/* ═══ PINBOARD ═══ */
+const CX=150,CY=150,PIN_R=118;
+const pinAngles=Array.from({length:12},(_,i)=>-Math.PI/2+(i/12)*2*Math.PI);
+const pins=pinAngles.map((a,i)=>({x:CX+PIN_R*Math.cos(a),y:CY+PIN_R*Math.sin(a),n:i+1}));
+const TARGET_LETTERS=[
+  {t:'P',x:108,y:108},{t:'S',x:150,y:90},{t:'A',x:192,y:108},
+  {t:'L',x:210,y:150},{t:'M',x:190,y:193},
+  {t:'1',x:148,y:212},{t:'3',x:110,y:193},{t:'9',x:88,y:150},
+  {t:':',x:150,y:150},
+  {t:'1',x:128,y:130},{t:'-',x:162,y:130},
+  {t:'1',x:128,y:170},{t:'2',x:162,y:170},
+];
+const DISTRACTORS=[
+  {t:'X',x:56,y:56},{t:'Q',x:244,y:56},{t:'Z',x:244,y:244},{t:'W',x:56,y:244},
+  {t:'K',x:26,y:130},{t:'V',x:272,y:130},{t:'7',x:66,y:160},{t:'4',x:234,y:160},
+  {t:'8',x:150,y:26},{t:'6',x:150,y:272},{t:'B',x:86,y:72},{t:'J',x:214,y:72},
+  {t:'R',x:92,y:228},{t:'T',x:212,y:228},
+];
+let pbStep=0;
+
+function initPinBoard(){
+  const svg=document.getElementById('pb-svg');
+  svg.setAttribute('width','360');svg.setAttribute('height','360');svg.setAttribute('viewBox','0 0 360 360');
+  const CX=180,CY=180,R=155;
+
+  const clockPos=Array.from({length:12},(_,i)=>({
+    x:Math.round(CX+R*Math.cos(-Math.PI/2+(i/12)*2*Math.PI)),
+    y:Math.round(CY+R*Math.sin(-Math.PI/2+(i/12)*2*Math.PI))
+  }));
+
+  const numAtPos=[7,3,11,6,2,9,4,12,8,1,5,10];
+  const posOfNum={};
+  numAtPos.forEach((num,pos)=>{ posOfNum[num]=pos; });
+
+  // 정답 글자 — 실에 닿지 않는 위치 (계산으로 검증됨)
+  const TARGETS=[{t:'P',x:269,y:209},{t:'S',x:137,y:177},{t:'A',x:77,y:73},{t:'L',x:97,y:89},{t:'M',x:269,y:273},{t:'139',x:37,y:145},{t:':',x:245,y:209},{t:'1-',x:189,y:113},{t:'12',x:89,y:241}];
+  const DIST=[{t:'B',x:229,y:77},{t:'C',x:61,y:185},{t:'X',x:165,y:301},{t:'Z',x:97,y:169},{t:'W',x:289,y:173},{t:'T',x:257,y:105},{t:'R',x:93,y:269},{t:'F',x:129,y:129},{t:'G',x:301,y:201},{t:'H',x:209,y:209},{t:'V',x:69,y:137},{t:'56',x:193,y:273},{t:'33',x:225,y:249},{t:'4~',x:149,y:265},{t:'32',x:277,y:137},{t:'11',x:237,y:177},{t:'9',x:189,y:137},{t:'0',x:189,y:309},{t:'6',x:297,y:125},{t:'8',x:189,y:221}];
+
+  svg.innerHTML=`
+<circle cx="180" cy="180" r="172" fill="#F5E6C8" stroke="#C9A84C" stroke-width="2.5"/>
+<circle cx="180" cy="180" r="163" fill="none" stroke="#E8D5A3" stroke-width="1"/>
+<g id="pbg-distractors">${DIST.map(d=>`<text x="${d.x}" y="${d.y}" text-anchor="middle" dominant-baseline="middle" font-size="${d.t.length>1?11:14}" fill="#8B6347" font-family="monospace" font-weight="600" opacity="0.85">${d.t}</text>`).join('')}</g>
+<g id="pbg-lines"></g>
+<g id="pbg-targets">${TARGETS.map((d,i)=>`<text id="tl-${i}" x="${d.x}" y="${d.y}" text-anchor="middle" dominant-baseline="middle" font-size="${d.t.length>1?11:14}" fill="#8B6347" font-family="monospace" font-weight="700" opacity="0.85">${d.t}</text>`).join('')}</g>
+<g id="pbg-pins">${numAtPos.map((num,pos)=>`
+<circle id="pin-${num}" cx="${clockPos[pos].x}" cy="${clockPos[pos].y}" r="14" fill="#fff" stroke="#7B5230" stroke-width="2" cursor="pointer" onclick="pressPin(${num})"/>
+<text x="${clockPos[pos].x}" y="${clockPos[pos].y}" text-anchor="middle" dominant-baseline="middle" font-size="11" fill="#3D2B1F" font-weight="700" pointer-events="none">${num}</text>`).join('')}
+</g>`;
+
+  pbStep=1;
+  window._posOfNum=posOfNum;
+  window._clockPos=clockPos;
+  document.getElementById('pin-1').setAttribute('fill','#E8C96A');
+  document.getElementById('pb-progress').innerHTML='&nbsp;';
+  document.getElementById('pb-answer-box').style.display='none';
+  document.getElementById('pb-success').style.display='none';
+}
+
+
+function pressPin(num){
+  if(num!==pbStep)return; // 순서대로만
+  const pos=window._posOfNum[num];
+  const cp=window._clockPos;
+  document.getElementById('pin-'+num).setAttribute('fill','#C9A84C');
+
+  if(pbStep>1){
+    const prevPos=window._posOfNum[pbStep-1];
+    const lg=document.getElementById('pbg-lines');
+    const line=document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',cp[prevPos].x.toFixed(1));line.setAttribute('y1',cp[prevPos].y.toFixed(1));
+    line.setAttribute('x2',cp[pos].x.toFixed(1));line.setAttribute('y2',cp[pos].y.toFixed(1));
+    line.setAttribute('stroke','#C0392B');line.setAttribute('stroke-width','2.5');line.setAttribute('opacity','0.85');
+    lg.appendChild(line);
+  }
+  pbStep++;
+  if(pbStep<=12){
+    document.getElementById('pb-progress').innerHTML=`다음 핀: <strong style="color:var(--gold);">${pbStep}번</strong>`;
+    const nextPin=document.getElementById('pin-'+pbStep);
+    if(nextPin) nextPin.setAttribute('fill','#FFE082');
+  } else {
+    document.getElementById('pb-progress').innerHTML='&nbsp;';
+    document.getElementById('pb-answer-box').style.display='block';
+    document.getElementById('pb-answer-box').scrollIntoView({behavior:'smooth'});
+  }
+}
+
+
+function resetPinboard(){initPinBoard();}
+function checkPB(){
+  const ans=document.getElementById('pb-input').value.trim().toLowerCase().replace(/\s/g,'');
+  if(ans==='psalm139:1-12'||ans==='psalm139:112'){
+    document.getElementById('pb-answer-box').style.display='none';
+    document.getElementById('pb-success').style.display='block';
+    document.getElementById('pb-success').scrollIntoView({behavior:'smooth'});
+  } else {showErr('pb-err',true);setTimeout(()=>showErr('pb-err',false),3000);}
+}
+
+/* ═══ CIPHER ═══ */
+function checkCipher(){
+  if(document.getElementById('ci-input').value.trim()==='전지전능'){
+    document.getElementById('ci-success').style.display='block';
+    document.getElementById('ci-success').scrollIntoView({behavior:'smooth'});
+  } else {showErr('ci-err',true);setTimeout(()=>showErr('ci-err',false),3000);}
+}
+
+/* ═══ FINAL ═══ */
+function checkFinal(){
+  const f1=document.getElementById('f1').value.trim();
+  const f2=document.getElementById('f2').value.trim();
+  const f3=document.getElementById('f3').value.trim();
+  if(f1==='창조주'&&f2==='거룩'&&f3==='전지전능'){go('ending');}
+  else{showErr('f-err',true);setTimeout(()=>showErr('f-err',false),3000);}
+}
+
+/* ═══ MOBILE HEIGHT FIX ═══ */
+(function(){
+  function setVH(){
+    const vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', vh + 'px');
+    document.getElementById('game').style.height = window.innerHeight + 'px';
+  }
+  setVH();
+  window.addEventListener('resize', setVH);
+  window.addEventListener('orientationchange', function(){ setTimeout(setVH, 100); });
+})();
+
+/* ═══ ATTR TOGGLE ═══ */
+function toggleAttr(id){
+  const el=document.getElementById(id);
+  el.classList.toggle('open');
+  const toggle=el.previousElementSibling.previousElementSibling?.querySelector?.('.attr-toggle') ||
+               el.parentElement.querySelector('.attr-toggle');
+  if(toggle) toggle.textContent=el.classList.contains('open')?'▴ 접기':'▾ 더 알아보기';
+}
+
+/* ═══ INIT ═══ */
+document.getElementById('d-page7').style.display='none';
+initSortTiles();
+updateDiaryUI();
+initPinBoard();
+go('password');
+
+function checkPw(){
+  const val = document.getElementById('pw-input').value;
+  const err = document.getElementById('pw-err');
+  if(val === 'jesusislove'){
+    go('intro');
+  } else {
+    err.style.display = 'block';
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+    setTimeout(()=>{ err.style.display='none'; }, 2000);
+  }
+}
+</script>
+</body>
+</html>

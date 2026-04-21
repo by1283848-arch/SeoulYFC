@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>서울YFC 체험 활동</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+      background: #EEF2FA;
+      color: #1B3A6B;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+    }
+
+    .lobby {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      max-width: 440px;
+      gap: 0;
+    }
+
+    /* 로고 */
+    .logo-wrap {
+      margin-bottom: 48px;
+    }
+    .logo-wrap img {
+      width: 300px;
+      max-width: 75vw;
+      display: block;
+    }
+
+    /* 구분선 */
+    .divider {
+      width: 40px;
+      height: 1px;
+      background: rgba(27,58,107,.2);
+      margin-bottom: 40px;
+    }
+
+    /* 부제 */
+    .subtitle {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: .15em;
+      color: rgba(27,58,107,.5);
+      text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+
+    /* 버튼 그룹 */
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      width: 100%;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      padding: 22px 28px;
+      border-radius: 20px;
+      text-decoration: none;
+      transition: transform .15s, opacity .15s;
+    }
+    .btn:active {
+      transform: scale(.97);
+      opacity: .9;
+    }
+
+    .btn-onyu {
+      background: linear-gradient(135deg, #C8A060 0%, #A07840 100%);
+      color: #fff;
+    }
+    .btn-escape {
+      background: linear-gradient(135deg, #2A4A7A 0%, #1A3060 100%);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,.12);
+    }
+
+    .btn-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: left;
+    }
+    .btn-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      opacity: .7;
+    }
+    .btn-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: .02em;
+    }
+    .btn-desc {
+      font-size: 12px;
+      opacity: .65;
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+
+    .btn-icon {
+      font-size: 32px;
+      flex-shrink: 0;
+      margin-left: 16px;
+    }
+
+    /* 하단 */
+    .footer {
+      margin-top: 56px;
+      font-size: 11px;
+      color: rgba(27,58,107,.4);
+      letter-spacing: .06em;
+      text-align: center;
+      line-height: 1.8;
+    }
+  </style>
+</head>
+<body>
+
+<div class="lobby">
+
+  <div class="logo-wrap">
+    <a href="https://www.seoulyfc.org/" target="_blank">
+      <img src="Firstfile/Gemini_Generated_Image_z2uvcjz2uvcjz2uv.png" alt="서울YFC">
+    </a>
+  </div>
+
+  <div class="divider"></div>
+  <div class="subtitle">체험 활동 선택</div>
+
+  <div class="btn-group">
+
+    <a class="btn btn-onyu" href="onyu.html">
+      <div class="btn-left">
+        <div class="btn-label">Story</div>
+        <div class="btn-title">온유</div>
+        <div class="btn-desc">4가지 상황 속 온유를 체험해보세요</div>
+      </div>
+      <div class="btn-icon">💛</div>
+    </a>
+
+    <a class="btn btn-escape" href="Firstfile/하은이의 비밀_방탈출게임.html">
+      <div class="btn-left">
+        <div class="btn-label">Game</div>
+        <div class="btn-title">방탈출 게임</div>
+        <div class="btn-desc">하은이의 비밀을 풀어보세요</div>
+      </div>
+      <div class="btn-icon">🔐</div>
+    </a>
+
+  </div>
+
+  <div class="footer">
+    서울YFC · Youth For Christ<br>
+    그리스도는 십대를 통하여 세계를 변화시킨다
+  </div>
+
+</div>
+
+</body>
+</html>

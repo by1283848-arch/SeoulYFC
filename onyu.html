@@ -211,10 +211,29 @@
       background: #E0D8CC;
       margin: 0 auto 16px;
     }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 32px;
+      font-size: 13px;
+      color: #9A8060;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .back-btn:active { opacity: .6; }
   </style>
 </head>
 <body>
 <div id="wrap">
+
+  <a class="back-btn" href="index.html">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <path d="M10 3L5 8l5 5" stroke="#9A8060" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    홈으로
+  </a>
 
   <div class="hero">
     <div class="hero-badge">체험 활동</div>
@@ -383,10 +402,6 @@
     <div class="footer-line"></div>
     온유함은 문제를 해결해 주는 게 아니라<br>
     혼자가 아님을 느끼게 해주는 힘이에요.
-  </div>
-
-  <div style="text-align:center;margin-top:24px;">
-    <a href="test.html" style="font-size:11px;color:#C0B8A8;text-decoration:none;border:1px solid #E0D8CC;border-radius:6px;padding:5px 12px;">test</a>
   </div>
 
 </div>
